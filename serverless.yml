@@ -1,0 +1,30 @@
+service: codeCommitTest
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  stage: dev
+  region: us-east-2
+
+functions:
+  firstFun:
+    handler: handlerFun1.firstFun
+    events:
+      - http:
+        path: test/firstFun
+        method: get
+  secondFun:
+    handler: handlerFun2.secondFun
+    events:
+      - http:
+          path: test/secondFun
+          method: get
+  thirdFun:
+    handler: handlerFun3.thirdFun
+    events:
+      - http:
+          path: 
+          method: get
