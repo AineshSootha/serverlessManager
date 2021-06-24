@@ -5,50 +5,19 @@ frameworkVersion: '2'
 provider:
   name: aws
   runtime: nodejs12.x
-  stage: prod
-  region: us-east-2
-
+  lambdaHashingVersion: 20201221
+  stage: dev
+    region: us-east-2
 package:
   individually: true
 
-functions:
-  pyTest:
-    handler: handlerFunPyTester.pyTest
-    package:
-      patterns:
-        - '!./**'
-        - 'handlerFunPyTester.js'
-    events:
-      - http:
-        path: test
-        method: get
-  firstFun:
+functions:  firstFun:
     handler: handlerFun1.firstFun
-    events:
-      - http:
-          path: test/firstFun
-          method: get
     package:
       patterns:
         - '!./**'
         - 'handlerFun1.js'
-  secondFun:
-    handler: handlerFun2.secondFun
     events:
       - http:
-          path: test/secondFun
-          method: get
-    package:
-      patterns:
-        - '!./**'
-        - 'handlerFun2.js'
-  thirdFun:
-    handler: handlerFun3.thirdFun
-    events:
-      - http:
-          path: test/thirdFun
-          method: get
-    package:
-      patterns:
-        - '!./**'
-        - 'handlerFun3.js'
+        path: test
+        method: get
