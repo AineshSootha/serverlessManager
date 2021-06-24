@@ -8,7 +8,7 @@ def createSls(slsPath):
     service = input('Service Name: ')
     region = input('Region: ')
     stage = input('Stage: ')
-    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  runtime: nodejs12.x\n  lambdaHashingVersion: 20201221\n  stage: {stage}\n  region: {region}\npackage:\n  individually: true\n\nfunctions:'
+    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  runtime: nodejs12.x\n  lambdaHashingVersion: 20201221\n  stage: {stage}\n  region: {region}\npackage:\n  individually: true\n\nfunctions:\n'
     with open('serverless.yml', 'w') as fSls:
         fSls.write(sls)
         
@@ -44,7 +44,7 @@ def main(skip, buildspec):
     if not slsPath.exists():
         createSls(slsPath)
 
-    env_name = input(f"ENV_NAME: ")
+    env_name = input(f"\nENV_NAME: ")
     module = input("Name of Module (Eg: handler.firstFun): ")
     funName = input("Name of Function: ")
     fName = module.split('.')[0] + '.js'
@@ -68,7 +68,7 @@ def main(skip, buildspec):
     
     addTosls(fName, module, funName)
     print(f"If you want to add more properties, \n{Fore.YELLOW}visit: https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/{Style.RESET_ALL}\n")
-    print(f"{Fore.YELLOW}If you would like to add more files (Other than '{fName}'') to the lambda function, edit serverless.yml and add the required files to the \'package\' section under your newly added function.{Style.RESET_ALL}\n")
+    print(f"{Fore.YELLOW}If you would like to add more files (Other than \'{fName}\') to the lambda function, edit serverless.yml and add the required files to the \'package\' section under your newly added function.{Style.RESET_ALL}\n")
     print(f"{Fore.GREEN}Adding {env_name} to buildspec.yml.{Style.RESET_ALL} \nCheck Environment Variable config here: LINK")
     addToBSpec(env_name)
     
