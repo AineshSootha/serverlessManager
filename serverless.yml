@@ -7,12 +7,11 @@ provider:
   runtime: nodejs12.x
   lambdaHashingVersion: 20201221
   stage: dev
-  region: us-east-2
-package:
+    region: us-east-2
+package
   individually: true
 
-functions:
-  firstFun:
+functions:  firstFun:
     handler: handlerFun1.firstFun
     package:
       patterns:
@@ -20,5 +19,5 @@ functions:
         - 'handlerFun1.js'
     events:
       - http:
-        path: test
+          path: test
         method: get

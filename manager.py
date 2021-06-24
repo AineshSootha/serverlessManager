@@ -3,6 +3,7 @@ from pathlib import Path
 from colorama import Fore, init, Style
 
 init()
+
 def createSls(slsPath):
     print(f'{Fore.YELLOW}It seems like serverless.yml doesn\'t exist.\n{Style.RESET_ALL}Creating serverless.yml\n{Fore.YELLOW}For info, Visit: https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/{Style.RESET_ALL} ')
     service = input('Service Name: ')
