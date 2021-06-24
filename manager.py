@@ -2,6 +2,7 @@ import click
 from pathlib import Path
 from colorama import Fore, init, Style
 
+
 init()
 
 def addTosls(module, funName):
