@@ -30,6 +30,9 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 	- Create the Pipeline
  
 - Install serverless-manager and place it in the directory with your handlers
+
+## Using the tool
+
  - Run serverless manager on your terminal and follow the instructions:
   ![First Steps](/assets/firstSteps.png)
  - Here, I created a service called "CodeCommitTest" and set the AWS-region to us-east-2 (which is what my AWS console is set to). The 
