@@ -104,7 +104,7 @@ def createSls(slsPath):
     service = input('Service Name: ')
     region = input('Region: ')
     stage = input('Stage: ')
-    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  runtime: nodejs12.x\n  lambdaHashingVersion: 20201221\n  stage: {stage}\n    region: {region}\npackage\n  individually: true\n\nfunctions:'
+    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  runtime: nodejs12.x\n  lambdaHashingVersion: 20201221\n  stage: {stage}\n    region: {region}\npackage:\n  individually: true\n\nfunctions:\n'
     with open('serverless.yml', 'w') as fSls:
         fSls.write(sls)
         
