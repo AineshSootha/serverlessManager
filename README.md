@@ -2,7 +2,7 @@
 
 A basic Python Tool that simplifies the deployment of multiple AWS Lambda functions directly from an AWS CodeCommit Repository.
 
-    pip install sls manager
+    pip install slsmanager
 
 ## Set Up
 
