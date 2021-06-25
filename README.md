@@ -2,6 +2,8 @@
 
 A basic Python Tool that simplifies the deployment of multiple AWS Lambda functions directly from an AWS CodeCommit Repository.
 
+    pip install sls manager
+
 ## Set Up
 
  - Set up an IAM user on your AWS console 
@@ -34,7 +36,8 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 
 ## Using the tool
 
- - If you have a file called handlerFun1.js, it contains the function firstFun() which you would like to deploy.
+ - If you have a file called ***handlerFun1.js***, it contains the function firstFun() which you would like to deploy.
+ - Open a terminal window and navigate to the directory with the handler file. 
  - Run serverless manager on your terminal:
 	 - `slsmanager`
  
