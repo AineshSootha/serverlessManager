@@ -11,7 +11,8 @@ provider:
 package
   individually: true
 
-functions:  firstFun:
+functions:  
+  firstFun:
     handler: handlerFun1.firstFun
     package:
       patterns:
