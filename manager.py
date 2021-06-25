@@ -3,48 +3,197 @@
 import click
 from pathlib import Path
 from colorama import Fore, init, Style
-#import boto3
-#import credentials
-
+import boto3
+import credentials
+import json
+import time
 
 init()
 
 
 
-'''
+
 def createCBRole(projName):
     IAM_client = boto3.client('iam', 
                             region_name=credentials.AWS_DEFAULT_REGION, 
                             aws_access_key_id=credentials.AWS_ACCESS_KEY_ID,
                             aws_secret_access_key=credentials.AWS_SECRET_ACCESS_KEY
                             )
-    
-    IAM_response = IAM_client.create_role(
+    dataCreate = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+        "Effect": "Allow",
+        "Principal": {
+            "Service": "codebuild.amazonaws.com"
+        },
+        "Action": "sts:AssumeRole"
+        }
+    ]
+    }
+
+    dataPut = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Resource": [
+                    "arn:aws:logs:us-east-2:528136268406:log-group:/aws/codebuild/",
+                    f"arn:aws:logs:us-east-2:528136268406:log-group:/aws/codebuild/{projName}:*"
+                ],
+                "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                ]
+            },
+            {
+                "Effect": "Allow",
+                "Resource": [
+                    "arn:aws:s3:::codepipeline-us-east-2-*"
+                ],
+                "Action": [
+                    "s3:PutObject",
+                    "s3:GetObject",
+                    "s3:GetObjectVersion",
+                    "s3:GetBucketAcl",
+                    "s3:GetBucketLocation"
+                ]
+            },
+            {
+                "Effect": "Allow",
+                "Resource": [
+                    f"arn:aws:codecommit:us-east-2:528136268406:{projName}"
+                ],
+                "Action": [
+                    "codecommit:GitPull"
+                ]
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "codebuild:CreateReportGroup",
+                    "codebuild:CreateReport",
+                    "codebuild:UpdateReport",
+                    "codebuild:BatchPutTestCases",
+                    "codebuild:BatchPutCodeCoverages"
+                ],
+                "Resource": [
+                    f"arn:aws:codebuild:us-east-2:528136268406:report-group/{projName}-*"
+                ]
+            }
+        ]
+    }
+    '''
+    dataPut = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+            "Sid": "CloudWatchLogsPolicy",
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": [
+                "*"
+            ]
+            },
+            {
+            "Sid": "CodeCommitPolicy",
+            "Effect": "Allow",
+            "Action": [
+                "codecommit:GitPull"
+            ],
+            "Resource": [
+                "*"
+            ]
+            },
+            {
+            "Sid": "S3GetObjectPolicy",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:GetObjectVersion"
+            ],
+            "Resource": [
+                "*"
+            ]
+            },
+            {
+            "Sid": "S3PutObjectPolicy",
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject"
+            ],
+            "Resource": [
+                "*"
+            ]
+            },
+            {
+            "Sid": "S3BucketIdentity",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetBucketAcl",
+                "s3:GetBucketLocation"
+            ],
+            "Resource": [
+                "*"
+            ]
+            }
+        ]
+    }
+    '''
+    IAMPolicy_response = IAM_client.create_policy(
+        PolicyName=f'CodebuildBasePolicy-{projName}-role-policy',
+        PolicyDocument=json.dumps(dataPut),
+    ) 
+    #try:
+    IAMCreate_response = IAM_client.create_role(
         Path='/service-role/',
         RoleName=f'codebuild-{projName}-service-role',
-        AssumeRolePolicyDocument='string',
-        Description='string',
-        MaxSessionDuration=123,
-        PermissionsBoundary='string',
-        Tags=[
-            {
-                'Key': 'string',
-                'Value': 'string'
-            },
-        ]
-)
+        AssumeRolePolicyDocument=json.dumps(dataCreate),
+        MaxSessionDuration=3600,
+    )
+    #except Exception:
+    #    pass
+    #try:
+     
+    #except Exception:
+    #    pass
+    #try:
+    IAMPut_response = IAM_client.put_role_policy(
+        RoleName=f'codebuild-{projName}-service-role',
+        PolicyName=f'CodebuildBasePolicy-{projName}-role-policy',
+        PolicyDocument=json.dumps(dataPut)
+    )
+    #except Exception:
+    #    pass
+    print(IAMCreate_response['Role']['Arn'])
+    return IAMCreate_response['Role']['Arn']
+    
+    
 
 
 
 def createCB(projName):
-    #ARN = createCBRole(projName)
+    ARN = createCBRole(projName) #THIS IS THE MAIN ISSUE. it seems like AWS takes a bit of time to load the roles
+    time.sleep(30)
     CB_client = boto3.client('codebuild', 
                             region_name=credentials.AWS_DEFAULT_REGION, 
                             aws_access_key_id=credentials.AWS_ACCESS_KEY_ID,
                             aws_secret_access_key=credentials.AWS_SECRET_ACCESS_KEY
                             )
-    CB_response = CB_client.update_project(
+    CB_response = CB_client.create_project(
         name=projName,
+        source={
+            'type': 'CODECOMMIT',
+            'location': credentials.repoURL
+        },
+        artifacts={
+            'type': 'NO_ARTIFACTS'
+        },
         environment={
             'type': 'LINUX_CONTAINER',
             'image': 'aws/codebuild/standard:5.0',
@@ -82,6 +231,7 @@ def createCB(projName):
                 }
             ]
         },
+        serviceRole = ARN,
         timeoutInMinutes=60,
         queuedTimeoutInMinutes=480,
         badgeEnabled=False,
@@ -96,7 +246,7 @@ def createCB(projName):
             }
         }
     )
-'''
+
 
 
 def createSls(slsPath):
@@ -118,7 +268,7 @@ def addTosls(fname, module, funName):
                 break
             j += 1
         j += 1
-        dataLines.insert(j, f'  {funName}:\n    handler: {module}\n    package:\n      patterns:\n        - \'!./**\'\n        - \'{fname}\'\n    events:\n      - http:\n          path: test\n        method: get\n')
+        dataLines.insert(j, f'  {funName}:\n    handler: {module}\n    package:\n      patterns:\n        - \'!./**\'\n        - \'{fname}\'\n    events:\n      - http:\n          path: test/{funName}\n        method: get\n')
         
     with open('serverless.yml', 'w') as fSls:    
         dataFinal = "".join(dataLines) 
