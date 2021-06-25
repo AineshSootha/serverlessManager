@@ -17,7 +17,7 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
  - Create a CodeBuild Project
 	- Set the source provider to **CodeCommit** and the repository to the newly created CodeCommit repository
 	- Pick the branch you will be pushing to.
-	- In buildspec, choose **“Use a buildspec file”** and leave the filename empty (Since the default is  **_buildspec.yml_**
+	- In buildspec, choose **“Use a buildspec file”** and leave the filename empty (Since the default is  **_buildspec.yml_**)
 	- Create the project
 	- Edit the environment variables and add the following variables:
 	 ![Environment Variables](/assets/envVariables.png)
