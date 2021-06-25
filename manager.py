@@ -3,10 +3,101 @@
 import click
 from pathlib import Path
 from colorama import Fore, init, Style
-import boto3
+#import boto3
+#import credentials
 
 
 init()
+
+
+
+'''
+def createCBRole(projName):
+    IAM_client = boto3.client('iam', 
+                            region_name=credentials.AWS_DEFAULT_REGION, 
+                            aws_access_key_id=credentials.AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=credentials.AWS_SECRET_ACCESS_KEY
+                            )
+    
+    IAM_response = IAM_client.create_role(
+        Path='/service-role/',
+        RoleName=f'codebuild-{projName}-service-role',
+        AssumeRolePolicyDocument='string',
+        Description='string',
+        MaxSessionDuration=123,
+        PermissionsBoundary='string',
+        Tags=[
+            {
+                'Key': 'string',
+                'Value': 'string'
+            },
+        ]
+)
+
+
+
+def createCB(projName):
+    #ARN = createCBRole(projName)
+    CB_client = boto3.client('codebuild', 
+                            region_name=credentials.AWS_DEFAULT_REGION, 
+                            aws_access_key_id=credentials.AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=credentials.AWS_SECRET_ACCESS_KEY
+                            )
+    CB_response = CB_client.update_project(
+        name=projName,
+        environment={
+            'type': 'LINUX_CONTAINER',
+            'image': 'aws/codebuild/standard:5.0',
+            'computeType': 'BUILD_GENERAL1_SMALL',
+            'environmentVariables': [
+                {
+                    'name': 'ENV_NAME_dev',
+                    'value': 'dev',
+                    'type': 'PLAINTEXT'
+                },
+                {
+                    'name': 'ENV_NAME_prod',
+                    'value': 'prod',
+                    'type': 'PLAINTEXT'
+                },
+                {
+                    'name': 'ENV_NAME_uat',
+                    'value': 'uat',
+                    'type': 'PLAINTEXT'
+                },
+                {
+                    'name': 'AWS_DEFAULT_REGION',
+                    'value': credentials.AWS_DEFAULT_REGION,
+                    'type': 'PLAINTEXT'
+                },
+                {
+                    'name': 'AWS_ACCESS_KEY_ID',
+                    'value': credentials.AWS_ACCESS_KEY_ID,
+                    'type': 'PLAINTEXT'
+                },
+                {
+                    'name': 'AWS_SECRET_ACCESS_KEY',
+                    'value': credentials.AWS_SECRET_ACCESS_KEY,
+                    'type': 'PLAINTEXT'
+                }
+            ]
+        },
+        timeoutInMinutes=60,
+        queuedTimeoutInMinutes=480,
+        badgeEnabled=False,
+        logsConfig={
+            'cloudWatchLogs': {
+                'status': 'ENABLED',
+                'groupName': 'string',
+                'streamName': 'string'
+            },
+            's3Logs': {
+                'status': 'DISABLED'
+            }
+        }
+    )
+'''
+
 
 def createSls(slsPath):
     print(f'{Fore.YELLOW}It seems like serverless.yml doesn\'t exist.\n{Style.RESET_ALL}Creating serverless.yml\n{Fore.YELLOW}For info, Visit: https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/{Style.RESET_ALL} ')
