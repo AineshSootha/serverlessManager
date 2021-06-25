@@ -29,7 +29,8 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 	- Skip deploy stage since we are using the [Serverless Framework](https://www.serverless.com/framework/docs/providers/aws/) to deploy our functions
 	- Create the Pipeline
  
-- Install serverless-manager
+- Install serverless-manager:
+	- `pip install slsmanager`
 
 ## Using the tool
 
