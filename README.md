@@ -34,8 +34,11 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 
 ## Using the tool
 
- - I have a file called handlerFun1.js. It contains the function firstFun() which I would like to deploy.
- - Run serverless manager on your terminal and follow the instructions:
+ - If you have a file called handlerFun1.js, it contains the function firstFun() which you would like to deploy.
+ - Run serverless manager on your terminal:
+	 - `slsmanager`
+ 
+  - And follow the on-screen instructions:
   ![First Steps](/assets/firstSteps.png)
 	 - Here, I created a service called "CodeCommitTest" 
 	 - I set the AWS-region to us-east-2 (which is what my AWS console is set to). 
