@@ -1,6 +1,10 @@
+#! /usr/bin/env python3
+
 import click
 from pathlib import Path
 from colorama import Fore, init, Style
+import boto3
+
 
 init()
 
