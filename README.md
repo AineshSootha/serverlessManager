@@ -16,13 +16,7 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 
 
 
-- Create a CodePipeline
-	- Source provider:  **_AWS CodeCommit_**
-	- Repo Name:  **_Source repo_**
-	- Build Provider:  **_AWS_**  **_CodeBuild_**
-	- Project Name:  **_Name of Codebuild Project_**
-	- Skip deploy stage since we are using the [Serverless Framework](https://www.serverless.com/framework/docs/providers/aws/) to deploy our functions
-	- Create the Pipeline
+
  
 - Install serverless-manager on your local machine:
 	- `pip install slsmanager`
@@ -39,7 +33,6 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
  ![Steps to create a project](/assets/cbproj.png)
 	- You can use slsmanager to create a CodeBuild Project.
 	- You will need your AWS Access Key ID, your Secret Access Key, the default region and the URL to your CodeCommit Repository
-	- Note that by default this tool will save all the required Environment Variables in plaintext. You can use the AWS console to change this.
 - Create a CodeBuild Project **(OPTION 2: using AWS console)**
 	- **Skip these steps if you used slsmanager to create the project**
 	- Set the source provider to **CodeCommit** and the repository to the newly created CodeCommit repository
@@ -49,6 +42,17 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 	- Edit the environment variables and add the following variables:
 	 ![Environment Variables](/assets/envVariables.png)
 	- The ENV_NAME_ variables refer to the different environments you would be deploying. For instance, I have 3 environments: dev, prod and uat. This allows us to deploy the lambda function at different stages (Creating a different function for each stage)
+
+### 2. Creating the CodePipeline
+- slsmanager doesn't support the creation of a CodePipeline. 
+- Using the AWS console:
+	- Source provider:  **_AWS CodeCommit_**
+	- Repo Name:  **_Source repo_**
+	- Build Provider:  **_AWS_**  **_CodeBuild_**
+	- Project Name:  **_Name of Codebuild Project_**
+	- Skip deploy stage since we are using the [Serverless Framework](https://www.serverless.com/framework/docs/providers/aws/) to deploy our functions
+	- Create the Pipeline
+
 
 ### 2. Creating ***serverless.yml*** and ***buildspec.yml***
 
@@ -63,9 +67,8 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 	 - The **function name** is the name of the final lambda function (and is set in ***serverless.yml***).
 	 - By default, the only file added to the current lambda function (That will show up on the console) is the handler file provided in the module name. If you would like to include other files in the final lambda function that is deployed, you may edit the newly generated ***serverless.yml*** and add the required files to the **functions/*your_function*/package/patterns**
 	 - You may also edit/add any other properties in ***serverless.yml***
-	 - Finally, the tool generates a buildspec.yml file for your function
+	 - Finally, the tool generates a buildspec.yml file for your function.
 		 - If you want to deploy all lambda functions present in ***serverless.yml*** you can press **'a'** in the final step. Otherwise, press **'n'**.
-		 - You can also edit ***buildspec.yml*** if you want to deploy multiple functions. (By editing the `sls deploy` line and adding other functions
 	 - Once you have completed all your steps, you will see 2 new files ***serverless.yml*** (Which lists all the properties required to deploy using the Serverless Framework and ***buildspec.yml*** (Which instructs CodeBuild to deploy the function(s) using the given files and properties.
 
 
