@@ -8,8 +8,12 @@ import json
 import time
 from progress.bar import Bar
 import os
+import flask
 
 init() #colorama
+'''
+Classes
+'''
 
 class credentials:
     def __init__(self, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, repoURL=""):
@@ -22,6 +26,9 @@ class credentials:
     def printRepoURL(self):
         print(f"The HTTP clone URL for the repo: {Fore.YELLOW}{self.repoURL}{Style.RESET_ALL}")
 
+'''
+AWS STUFF
+'''
 
 def createRepo(repoName, repoDesc, creds):
     CC_client = boto3.client('codecommit', 
@@ -221,6 +228,10 @@ def createCB(projName, creds):
     )
 
 
+'''
+File STUFF
+'''
+
 def createSls(slsPath):
     print(f'{Fore.YELLOW}It seems like serverless.yml doesn\'t exist.\n{Style.RESET_ALL}Creating serverless.yml\n{Fore.YELLOW}For info, Visit: https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/{Style.RESET_ALL} ')
     service = input('Service Name: ')
@@ -256,12 +267,31 @@ def addToBSpec(env_name, allorOne, funName):
     with open('buildspec.yml', 'w') as fBspec:
         fBspec.writelines(fBspecLines)
         
+app = flask.Flask(__name__)
 
+'''
+UI STUFF
+'''
+@app.route("/")
+def mainGUI():
+    return flask.render_template("index.html")
+
+
+'''
+Main STUFF
+'''
 @click.command()
 @click.option('--skip', '-s', is_flag=True)
 @click.option('--buildspec', '-b')
-def main(skip, buildspec):
+@click.option('--gui', '-g', is_flag=True)
+def main(skip, buildspec, gui):
+    if(gui == 1):
+        port = int(os.environ.get('PORT', 8001))
+        app.run(host='127.0.0.1', port=port)
+        return
+    
     print(f"{Fore.CYAN}========SLS Manager v 0.1.0========{Style.RESET_ALL}")
+    
     ccInput = input("Would you like to create a new CodeCommit Repo? (Y/N): ")
     if ccInput.lower() == 'y':
         AWS_ACCESS_KEY_ID = input('AWS ACCESS KEY ID: ')
@@ -272,6 +302,7 @@ def main(skip, buildspec):
         creds = credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION)
         createRepo(repoName, repoDesc, creds)
         creds.printRepoURL()
+    
     cbInput = input("Would you like to create a new CodeBuild project? (Y/N): ")
     if cbInput.lower() == 'y':
         if ccInput.lower() != 'y':
@@ -283,20 +314,21 @@ def main(skip, buildspec):
         projName = input("Name of CodeBuild project: ")
         createCB(projName, creds)
 
-        
-
     slsPath = Path('serverless.yml')
     if not slsPath.exists():
         createSls(slsPath)
+    
     env_name = input(f"ENV_NAME: ")
     module = input("Name of Module (Eg: handler.firstFun): ")
     funName = input("Name of Function: ")
     fName = module.split('.')[0] + '.js'
     mName = module.split('.')[1]
     fPath = Path(fName)
+
     if skip == 1:
         print(f"{Fore.YELLOW}Skipping Checks")
         print(f"{Fore.GREEN}OK! Adding {module} to serverless.yml{Style.RESET_ALL}\n")
+    
     else:
         if fPath.exists():
             with open(fName) as fin:
@@ -309,12 +341,13 @@ def main(skip, buildspec):
             print(f"{Fore.RED}Path {fName} does not exist! \n{Fore.YELLOW}If you still want to add it, run program with -s or --skip{Style.RESET_ALL}")
             return
     
-    
     addTosls(fName, module, funName)
     print(f"If you want to add more properties, \n{Fore.YELLOW}visit: https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/{Style.RESET_ALL}\n")
     print(f"{Fore.YELLOW}If you would like to add more files (Other than '{fName}') to the lambda function, edit serverless.yml and add the required files to the \'package\' section under your newly added function.{Style.RESET_ALL}\n")
     print(f"{Fore.GREEN}Adding {env_name} to buildspec.yml.{Style.RESET_ALL} \nCheck Environment Variable config here: LINK")
+    
     allorOne = input(f"Press A if you would like to deploy all lambda functions in repo (N otherwise): ")
+    
     addToBSpec(env_name, allorOne, funName)
     
 
