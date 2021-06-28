@@ -276,10 +276,33 @@ UI STUFF
 def mainGUI():
     return flask.render_template("index.html")
 
+@app.route("/repoSubmit", methods=['POST'])
+def repoSubmit():
+    AWS_ACCESS_KEY_ID = flask.request.form['AWS_ACCESS_KEY_ID']
+    AWS_SECRET_ACCESS_KEY = flask.request.form['AWS_SECRET_ACCESS_KEY']
+    AWS_DEFAULT_REGION = flask.request.form['AWS_DEFAULT_REGION']
+    repoName = flask.request.form['repoName']
+    repoDesc = flask.request.form['repoDesc']
+    creds = credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, "")
+    createRepo(repoName, repoDesc, creds)
+    return flask.render_template("index.html", repoURL = creds.repoURL)
+
+@app.route("/cbSubmit", methods=['POST'])
+def cbSubmit():
+    AWS_ACCESS_KEY_ID = flask.request.form['AWS_ACCESS_KEY_ID']
+    AWS_SECRET_ACCESS_KEY = flask.request.form['AWS_SECRET_ACCESS_KEY']
+    AWS_DEFAULT_REGION = flask.request.form['AWS_DEFAULT_REGION']
+    projName = flask.request.form['projName']
+    repoURL = flask.request.form['repoURL']
+    creds = credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, repoURL)
+    createCB(projName, creds)
+    return flask.render_template("index.html")
+
 
 '''
 Main STUFF
 '''
+
 @click.command()
 @click.option('--skip', '-s', is_flag=True)
 @click.option('--buildspec', '-b')
