@@ -11,13 +11,7 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 	  ![Permissions for IAM user](/assets/permissions.png)
 	 - Store the Access Key ID and the Secret Access Key
 	 - Generate the git credentials for the user. (Security Credentials -> HTTPS Git Credentials)
- 
- - Create a CodeCommit Repository and clone it to your directory using the Git Credentials.
 
-
-
-
- 
 - Install serverless-manager on your local machine:
 	- `pip install slsmanager`
 
@@ -27,8 +21,11 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
  - Run serverless manager on your terminal:
 	  `slsmanager`
   
+### 1. Creating a CodeCommit Repository
+- Follow the on screen instructions to Create a CodeCommit Repository and clone it to your directory using the Git Credentials.
+- You can also do this from the AWS console.
 
-### 1. Creating a CodeBuild Project
+### 2. Creating a CodeBuild Project
  - Create a CodeBuild Project **(OPTION 1: using slsmanager)**
  ![Steps to create a project](/assets/cbproj.png)
 	- You can use slsmanager to create a CodeBuild Project.
@@ -43,8 +40,8 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 	 ![Environment Variables](/assets/envVariables.png)
 	- The ENV_NAME_ variables refer to the different environments you would be deploying. For instance, I have 3 environments: dev, prod and uat. This allows us to deploy the lambda function at different stages (Creating a different function for each stage)
 
-### 2. Creating the CodePipeline
-- slsmanager doesn't support the creation of a CodePipeline. 
+### 3. Creating the CodePipeline
+- Serverless manager doesn't support the creation of a CodePipeline yet. 
 - Using the AWS console:
 	- Source provider:  **_AWS CodeCommit_**
 	- Repo Name:  **_Source repo_**
@@ -54,7 +51,7 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 	- Create the Pipeline
 
 
-### 3. Creating ***serverless.yml*** and ***buildspec.yml***
+### 4. Creating ***serverless.yml*** and ***buildspec.yml***
 
  If you have a file called ***handlerFun1.js***, and it contains the function firstFun() which you would like to deploy.
  - Follow the on-screen instructions:
