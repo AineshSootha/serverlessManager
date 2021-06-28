@@ -9,7 +9,7 @@ provider:
   stage: dev
   region: us-east-2
   package:
-  individually: true
+    individually: true
 
 functions:
   sampleFun:
