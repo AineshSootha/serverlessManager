@@ -4,16 +4,19 @@ import click
 from pathlib import Path
 from colorama import Fore, init, Style
 import boto3
-import credentials
 import json
 import time
+from progress.bar import Bar
 
 init()
 
 
 
-'''
 def createCBRole(projName):
+    try:
+        import credentials
+    except:
+        ValueError(f"{Style.BRIGHT}{Fore.RED}No credentials.py file provided!{Style.RESET_ALL}")
     IAM_client = boto3.client('iam', 
                             region_name=credentials.AWS_DEFAULT_REGION, 
                             aws_access_key_id=credentials.AWS_ACCESS_KEY_ID,
@@ -31,60 +34,7 @@ def createCBRole(projName):
         }
     ]
     }
-
-    dataPut = {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Resource": [
-                    "arn:aws:logs:us-east-2:528136268406:log-group:/aws/codebuild/",
-                    f"arn:aws:logs:us-east-2:528136268406:log-group:/aws/codebuild/{projName}:*"
-                ],
-                "Action": [
-                    "logs:CreateLogGroup",
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents"
-                ]
-            },
-            {
-                "Effect": "Allow",
-                "Resource": [
-                    "arn:aws:s3:::codepipeline-us-east-2-*"
-                ],
-                "Action": [
-                    "s3:PutObject",
-                    "s3:GetObject",
-                    "s3:GetObjectVersion",
-                    "s3:GetBucketAcl",
-                    "s3:GetBucketLocation"
-                ]
-            },
-            {
-                "Effect": "Allow",
-                "Resource": [
-                    f"arn:aws:codecommit:us-east-2:528136268406:{projName}"
-                ],
-                "Action": [
-                    "codecommit:GitPull"
-                ]
-            },
-            {
-                "Effect": "Allow",
-                "Action": [
-                    "codebuild:CreateReportGroup",
-                    "codebuild:CreateReport",
-                    "codebuild:UpdateReport",
-                    "codebuild:BatchPutTestCases",
-                    "codebuild:BatchPutCodeCoverages"
-                ],
-                "Resource": [
-                    f"arn:aws:codebuild:us-east-2:528136268406:report-group/{projName}-*"
-                ]
-            }
-        ]
-    }
-
+    
     dataPut = {
         "Version": "2012-10-17",
         "Statement": [
@@ -144,7 +94,7 @@ def createCBRole(projName):
             }
         ]
     }
-
+    
     IAMPolicy_response = IAM_client.create_policy(
         PolicyName=f'CodebuildBasePolicy-{projName}-role-policy',
         PolicyDocument=json.dumps(dataPut),
@@ -175,9 +125,21 @@ def createCBRole(projName):
 
 
 
+
 def createCB(projName):
+
+    try:
+        import credentials
+    except:
+        ValueError(f"{Style.BRIGHT}{Fore.RED}No credentials.py file provided!{Style.RESET_ALL}")
     ARN = createCBRole(projName) #THIS IS THE MAIN ISSUE. it seems like AWS takes a bit of time to load the roles
-    time.sleep(30)
+    bar = Bar('Processing', max=100)
+    for i in range(100):
+        time.sleep(0.15)
+        bar.next()
+    bar.finish()
+
+
     CB_client = boto3.client('codebuild', 
                             region_name=credentials.AWS_DEFAULT_REGION, 
                             aws_access_key_id=credentials.AWS_ACCESS_KEY_ID,
@@ -246,8 +208,6 @@ def createCB(projName):
     )
 
 
-'''
-
 def createSls(slsPath):
     print(f'{Fore.YELLOW}It seems like serverless.yml doesn\'t exist.\n{Style.RESET_ALL}Creating serverless.yml\n{Fore.YELLOW}For info, Visit: https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/{Style.RESET_ALL} ')
     service = input('Service Name: ')
@@ -288,11 +248,15 @@ def addToBSpec(env_name, allorOne, funName):
 @click.option('--skip', '-s', is_flag=True)
 @click.option('--buildspec', '-b')
 def main(skip, buildspec):
-    print(f"{Fore.CYAN}========SLS Manager========{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}========SLS Manager v 0.1.0========{Style.RESET_ALL}")
     slsPath = Path('serverless.yml')
     if not slsPath.exists():
         createSls(slsPath)
-
+    cbInput = input("Would you like to create a CodeBuild project? (Y/N): ")
+    if cbInput.lower() == 'y':
+        
+        projName = input("Name of CodeBuild project: ")
+        createCB(projName)
     env_name = input(f"ENV_NAME: ")
     module = input("Name of Module (Eg: handler.firstFun): ")
     funName = input("Name of Function: ")
