@@ -1,4 +1,4 @@
-service: exampleService
+service: sampleService
 
 frameworkVersion: '2'
 
@@ -8,7 +8,7 @@ provider:
   lambdaHashingVersion: 20201221
   stage: dev
   region: us-east-2
-package:
+  package:
   individually: true
 
 functions:
