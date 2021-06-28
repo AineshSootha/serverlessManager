@@ -7,20 +7,24 @@ import boto3
 import json
 import time
 from progress.bar import Bar
+import importlib
+import os
 
-init()
+init() #colorama
+
+class credentials:
+    def __init__(self, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, repoURL):
+        self.AWS_ACCESS_KEY_ID = AWS_ACCESS_KEY_ID
+        self.AWS_SECRET_ACCESS_KEY = AWS_SECRET_ACCESS_KEY
+        self.AWS_DEFAULT_REGION = AWS_DEFAULT_REGION
+        self.repo_URL = repoURL
 
 
-
-def createCBRole(projName):
-    try:
-        import credentials
-    except:
-        ValueError(f"{Style.BRIGHT}{Fore.RED}No credentials.py file provided!{Style.RESET_ALL}")
+def createCBRole(projName, creds):
     IAM_client = boto3.client('iam', 
-                            region_name=credentials.AWS_DEFAULT_REGION, 
-                            aws_access_key_id=credentials.AWS_ACCESS_KEY_ID,
-                            aws_secret_access_key=credentials.AWS_SECRET_ACCESS_KEY
+                            region_name=creds.AWS_DEFAULT_REGION, 
+                            aws_access_key_id=creds.AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=creds.AWS_SECRET_ACCESS_KEY
                             )
     dataCreate = {
     "Version": "2012-10-17",
@@ -125,13 +129,9 @@ def createCBRole(projName):
 
 
 
-def createCB(projName):
+def createCB(projName, creds):
 
-    try:
-        import credentials
-    except:
-        ValueError(f"{Style.BRIGHT}{Fore.RED}No credentials.py file provided!{Style.RESET_ALL}")
-    ARN = createCBRole(projName) #THIS IS THE MAIN ISSUE. it seems like AWS takes a bit of time to load the roles
+    ARN = createCBRole(projName, creds) #THIS IS THE MAIN ISSUE. it seems like AWS takes a bit of time to load the roles
     bar = Bar('Processing', max=100)
     for i in range(100):
         time.sleep(0.15)
@@ -140,15 +140,15 @@ def createCB(projName):
 
 
     CB_client = boto3.client('codebuild', 
-                            region_name=credentials.AWS_DEFAULT_REGION, 
-                            aws_access_key_id=credentials.AWS_ACCESS_KEY_ID,
-                            aws_secret_access_key=credentials.AWS_SECRET_ACCESS_KEY
+                            region_name=creds.AWS_DEFAULT_REGION, 
+                            aws_access_key_id=creds.AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=creds.AWS_SECRET_ACCESS_KEY
                             )
     CB_response = CB_client.create_project(
         name=projName,
         source={
             'type': 'CODECOMMIT',
-            'location': credentials.repoURL
+            'location': creds.repoURL
         },
         artifacts={
             'type': 'NO_ARTIFACTS'
@@ -175,17 +175,17 @@ def createCB(projName):
                 },
                 {
                     'name': 'AWS_DEFAULT_REGION',
-                    'value': credentials.AWS_DEFAULT_REGION,
+                    'value': creds.AWS_DEFAULT_REGION,
                     'type': 'PLAINTEXT'
                 },
                 {
                     'name': 'AWS_ACCESS_KEY_ID',
-                    'value': credentials.AWS_ACCESS_KEY_ID,
+                    'value': creds.AWS_ACCESS_KEY_ID,
                     'type': 'PLAINTEXT'
                 },
                 {
                     'name': 'AWS_SECRET_ACCESS_KEY',
-                    'value': credentials.AWS_SECRET_ACCESS_KEY,
+                    'value': creds.AWS_SECRET_ACCESS_KEY,
                     'type': 'PLAINTEXT'
                 }
             ]
@@ -248,14 +248,18 @@ def addToBSpec(env_name, allorOne, funName):
 @click.option('--buildspec', '-b')
 def main(skip, buildspec):
     print(f"{Fore.CYAN}========SLS Manager v 0.1.0========{Style.RESET_ALL}")
+    cbInput = input("Would you like to create a CodeBuild project? (Y/N): ")
+    if cbInput.lower() == 'y':
+        AWS_ACCESS_KEY_ID = input('AWS ACCESS KEY ID: ')
+        AWS_SECRET_ACCESS_KEY = input('AWS SECRET ACCESS KEY: ')
+        AWS_DEFAULT_REGION = input('AWS DEFAULT REGION: ')
+        repoURL = input('CodeCommit Repository URL: ')
+        creds = credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, repoURL)
+        projName = input("Name of CodeBuild project: ")
+        createCB(projName, creds)
     slsPath = Path('serverless.yml')
     if not slsPath.exists():
         createSls(slsPath)
-    cbInput = input("Would you like to create a CodeBuild project? (Y/N): ")
-    if cbInput.lower() == 'y':
-        
-        projName = input("Name of CodeBuild project: ")
-        createCB(projName)
     env_name = input(f"ENV_NAME: ")
     module = input("Name of Module (Eg: handler.firstFun): ")
     funName = input("Name of Function: ")
