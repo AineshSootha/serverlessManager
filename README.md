@@ -62,9 +62,9 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 	 - The **function name** is the name of the final lambda function (and is set in ***serverless.yml***).
 	 - By default, the only file added to the current lambda function (That will show up on the console) is the handler file provided in the module name. If you would like to include other files in the final lambda function that is deployed, you may edit the newly generated ***serverless.yml*** and add the required files to the **functions/*your_function*/package/patterns**
 	 - You may also edit/add any other properties in ***serverless.yml***
-	 - Finally, the tool generates a buildspec.yml file for your function.
+	 - Finally, the tool generates a buildspec.yml file for your function
 		 - If you want to deploy all lambda functions present in ***serverless.yml*** you can press **'a'** in the final step. Otherwise, press **'n'**.
-		 - You can also edit ***buildspec.yml*** if you want to deploy multiple functions.
+		 - You can also edit ***buildspec.yml*** if you want to deploy multiple functions. (By editing the `sls deploy` line and adding other functions
 	 - Once you have completed all your steps, you will see 2 new files ***serverless.yml*** (Which lists all the properties required to deploy using the Serverless Framework and ***buildspec.yml*** (Which instructs CodeBuild to deploy the function(s) using the given files and properties.
 
 
