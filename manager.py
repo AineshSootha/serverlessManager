@@ -35,6 +35,14 @@ def createRepo(repoName, repoDesc, creds):
     )
     creds.setRepoURL(repoCreate_response['repositoryMetadata']['cloneUrlHttp'])
 
+'''
+def commitToRepo(repoName,branchName,creds):
+    CC_client = boto3.client('codecommit', 
+                            region_name=creds.AWS_DEFAULT_REGION, 
+                            aws_access_key_id=creds.AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=creds.AWS_SECRET_ACCESS_KEY
+                            )
+'''
 
 def createCBRole(projName, creds):
     IAM_client = boto3.client('iam', 
