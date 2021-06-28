@@ -54,7 +54,7 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 	- Create the Pipeline
 
 
-### 2. Creating ***serverless.yml*** and ***buildspec.yml***
+### 3. Creating ***serverless.yml*** and ***buildspec.yml***
 
  If you have a file called ***handlerFun1.js***, and it contains the function firstFun() which you would like to deploy.
  - Follow the on-screen instructions:
