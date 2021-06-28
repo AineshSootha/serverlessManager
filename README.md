@@ -46,7 +46,7 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 	- Edit the environment variables and add the following variables:
 	 ![Environment Variables](/assets/envVariables.png)
 	- The ENV_NAME_ variables refer to the different environments you would be deploying. For instance, I have 3 environments: dev, prod and uat. This allows us to deploy the lambda function at different stages (Creating a different function for each stage)
-  - And follow the on-screen instructions:
+ - Follow the on-screen instructions:
   ![First Steps](/assets/firstSteps.png)
 	 - Here, I created a service called "CodeCommitTest" 
 	 - I set the AWS-region to us-east-2 (which is what my AWS console is set to). 
