@@ -35,60 +35,7 @@ def createCBRole(projName):
         }
     ]
     }
-    '''
-    dataPut = {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Resource": [
-                    "arn:aws:logs:us-east-2:528136268406:log-group:/aws/codebuild/",
-                    f"arn:aws:logs:us-east-2:528136268406:log-group:/aws/codebuild/{projName}:*"
-                ],
-                "Action": [
-                    "logs:CreateLogGroup",
-                    "logs:CreateLogStream",
-                    "logs:PutLogEvents"
-                ]
-            },
-            {
-                "Effect": "Allow",
-                "Resource": [
-                    "arn:aws:s3:::codepipeline-us-east-2-*"
-                ],
-                "Action": [
-                    "s3:PutObject",
-                    "s3:GetObject",
-                    "s3:GetObjectVersion",
-                    "s3:GetBucketAcl",
-                    "s3:GetBucketLocation"
-                ]
-            },
-            {
-                "Effect": "Allow",
-                "Resource": [
-                    f"arn:aws:codecommit:us-east-2:528136268406:{projName}"
-                ],
-                "Action": [
-                    "codecommit:GitPull"
-                ]
-            },
-            {
-                "Effect": "Allow",
-                "Action": [
-                    "codebuild:CreateReportGroup",
-                    "codebuild:CreateReport",
-                    "codebuild:UpdateReport",
-                    "codebuild:BatchPutTestCases",
-                    "codebuild:BatchPutCodeCoverages"
-                ],
-                "Resource": [
-                    f"arn:aws:codebuild:us-east-2:528136268406:report-group/{projName}-*"
-                ]
-            }
-        ]
-    }
-    '''
+    
     dataPut = {
         "Version": "2012-10-17",
         "Statement": [
