@@ -4,16 +4,20 @@ import click
 from pathlib import Path
 from colorama import Fore, init, Style
 import boto3
-import credentials
 import json
 import time
+from progress.bar import Bar
+
 
 init()
 
 
 
-
 def createCBRole(projName):
+    try:
+        import credentials
+    except:
+        ValueError(f"{Style.BRIGHT}{Fore.RED}No credentials.py file provided!{Style.RESET_ALL}")
     IAM_client = boto3.client('iam', 
                             region_name=credentials.AWS_DEFAULT_REGION, 
                             aws_access_key_id=credentials.AWS_ACCESS_KEY_ID,
@@ -178,8 +182,17 @@ def createCBRole(projName):
 
 
 def createCB(projName):
+    try:
+        import credentials
+    except:
+        ValueError(f"{Style.BRIGHT}{Fore.RED}No credentials.py file provided!{Style.RESET_ALL}")
     ARN = createCBRole(projName) #THIS IS THE MAIN ISSUE. it seems like AWS takes a bit of time to load the roles
-    time.sleep(30)
+    bar = Bar('Processing', max=100)
+    for i in range(100):
+        time.sleep(0.15)
+        bar.next()
+    bar.finish()
+
     CB_client = boto3.client('codebuild', 
                             region_name=credentials.AWS_DEFAULT_REGION, 
                             aws_access_key_id=credentials.AWS_ACCESS_KEY_ID,
@@ -289,11 +302,15 @@ def addToBSpec(env_name, allorOne, funName):
 @click.option('--skip', '-s', is_flag=True)
 @click.option('--buildspec', '-b')
 def main(skip, buildspec):
-    print(f"{Fore.CYAN}========SLS Manager========{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}========SLS Manager v 0.1.0========{Style.RESET_ALL}")
     slsPath = Path('serverless.yml')
     if not slsPath.exists():
         createSls(slsPath)
-
+    cbInput = input("Would you like to create a CodeBuild project? (Y/N): ")
+    if cbInput.lower() == 'y':
+        
+        projName = input("Name of CodeBuild project: ")
+        createCB(projName)
     env_name = input(f"ENV_NAME: ")
     module = input("Name of Module (Eg: handler.firstFun): ")
     funName = input("Name of Function: ")
