@@ -7,7 +7,6 @@ import boto3
 import json
 import time
 from progress.bar import Bar
-import importlib
 import os
 
 init() #colorama
