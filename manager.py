@@ -276,6 +276,10 @@ UI STUFF
 def mainGUI():
     return flask.render_template("index.html")
 
+@app.route("/back/<repoURL>")
+def back(repoURL):
+    return flask.render_template("index.html", repoURL = repoURL)
+
 @app.route("/repoSubmit", methods=['POST'])
 def repoSubmit():
     AWS_ACCESS_KEY_ID = flask.request.form['AWS_ACCESS_KEY_ID']
@@ -285,7 +289,7 @@ def repoSubmit():
     repoDesc = flask.request.form['repoDesc']
     creds = credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, "")
     createRepo(repoName, repoDesc, creds)
-    return flask.render_template("index.html", repoURL = creds.repoURL)
+    return flask.redirect(flask.url_for(f"/back/{creds.repoURL}"))
 
 @app.route("/cbSubmit", methods=['POST'])
 def cbSubmit():
