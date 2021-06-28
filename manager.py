@@ -8,7 +8,6 @@ import json
 import time
 from progress.bar import Bar
 
-
 init()
 
 
@@ -95,6 +94,7 @@ def createCBRole(projName):
             }
         ]
     }
+    
     IAMPolicy_response = IAM_client.create_policy(
         PolicyName=f'CodebuildBasePolicy-{projName}-role-policy',
         PolicyDocument=json.dumps(dataPut),
@@ -122,12 +122,12 @@ def createCBRole(projName):
     #    pass
     print(IAMCreate_response['Role']['Arn'])
     return IAMCreate_response['Role']['Arn']
-    
-    
+
 
 
 
 def createCB(projName):
+
     try:
         import credentials
     except:
@@ -138,6 +138,7 @@ def createCB(projName):
         time.sleep(0.15)
         bar.next()
     bar.finish()
+
 
     CB_client = boto3.client('codebuild', 
                             region_name=credentials.AWS_DEFAULT_REGION, 
@@ -205,7 +206,6 @@ def createCB(projName):
             }
         }
     )
-
 
 
 def createSls(slsPath):
