@@ -12,11 +12,28 @@ import os
 init() #colorama
 
 class credentials:
-    def __init__(self, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, repoURL):
+    def __init__(self, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, repoURL=""):
         self.AWS_ACCESS_KEY_ID = AWS_ACCESS_KEY_ID
         self.AWS_SECRET_ACCESS_KEY = AWS_SECRET_ACCESS_KEY
         self.AWS_DEFAULT_REGION = AWS_DEFAULT_REGION
-        self.repo_URL = repoURL
+        self.repoURL = repoURL
+    def setRepoURL(self, repoURL):
+        self.repoURL = repoURL
+    def printRepoURL(self):
+        print(f"The HTTP clone URL for the repo: {Fore.YELLOW}{self.repoURL}{Style.RESET_ALL}")
+
+
+def createRepo(repoName, repoDesc, creds):
+    CC_client = boto3.client('codecommit', 
+                            region_name=creds.AWS_DEFAULT_REGION, 
+                            aws_access_key_id=creds.AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=creds.AWS_SECRET_ACCESS_KEY
+                            )
+    repoCreate_response = CC_client.create_repository(
+        repositoryName=repoName,
+        repositoryDescription=repoDesc
+    )
+    creds.setRepoURL(repoCreate_response['repositoryMetadata']['cloneUrlHttp'])
 
 
 def createCBRole(projName, creds):
@@ -124,8 +141,6 @@ def createCBRole(projName, creds):
     #except Exception:
     #    pass
     return IAMCreate_response['Role']['Arn']
-
-
 
 
 def createCB(projName, creds):
@@ -247,15 +262,29 @@ def addToBSpec(env_name, allorOne, funName):
 @click.option('--buildspec', '-b')
 def main(skip, buildspec):
     print(f"{Fore.CYAN}========SLS Manager v 0.1.0========{Style.RESET_ALL}")
-    cbInput = input("Would you like to create a CodeBuild project? (Y/N): ")
-    if cbInput.lower() == 'y':
+    ccInput = input("Would you like to create a new CodeCommit Repo? (Y/N): ")
+    if ccInput.lower() == 'y':
         AWS_ACCESS_KEY_ID = input('AWS ACCESS KEY ID: ')
         AWS_SECRET_ACCESS_KEY = input('AWS SECRET ACCESS KEY: ')
         AWS_DEFAULT_REGION = input('AWS DEFAULT REGION: ')
-        repoURL = input('CodeCommit Repository URL: ')
-        creds = credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, repoURL)
+        repoName = input('CodeCommit Repository Name: ')
+        repoDesc = input('Repository description (Leave empty if blank): ')
+        creds = credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION)
+        createRepo(repoName, repoDesc, creds)
+        creds.printRepoURL()
+    cbInput = input("Would you like to create a new CodeBuild project? (Y/N): ")
+    if cbInput.lower() == 'y':
+        if ccInput.lower() != 'y':
+            AWS_ACCESS_KEY_ID = input('AWS ACCESS KEY ID: ')
+            AWS_SECRET_ACCESS_KEY = input('AWS SECRET ACCESS KEY: ')
+            AWS_DEFAULT_REGION = input('AWS DEFAULT REGION: ')
+            repoURL = input('CodeCommit Repository URL: ')
+            creds = credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, repoURL)
         projName = input("Name of CodeBuild project: ")
         createCB(projName, creds)
+
+        
+
     slsPath = Path('serverless.yml')
     if not slsPath.exists():
         createSls(slsPath)
