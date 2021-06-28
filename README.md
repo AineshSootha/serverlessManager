@@ -29,16 +29,19 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 
 ## Using the tool
 
- - If you have a file called ***handlerFun1.js***, it contains the function firstFun() which you would like to deploy.
  - Open a terminal window and navigate to the directory with the handler file. 
  - Run serverless manager on your terminal:
 	  `slsmanager`
- - Create a CodeBuild Project (OPTION 1: using slsmanager)
+  
+
+### 1. Creating a CodeBuild Project
+ - Create a CodeBuild Project **(OPTION 1: using slsmanager)**
  ![Steps to create a project](/assets/cbproj.png)
 	- You can use slsmanager to create a CodeBuild Project.
 	- You will need your AWS Access Key ID, your Secret Access Key, the default region and the URL to your CodeCommit Repository
-- Create a CodeBuild Project (OPTION 2: using AWS console)
-	- Skip these steps if you used slsmanager to create the project
+	- Note that by default this tool will save all the required Environment Variables in plaintext. You can use the AWS console to change this.
+- Create a CodeBuild Project **(OPTION 2: using AWS console)**
+	- **Skip these steps if you used slsmanager to create the project**
 	- Set the source provider to **CodeCommit** and the repository to the newly created CodeCommit repository
 	- Pick the branch you will be pushing to
 	- In buildspec, choose **“Use a buildspec file”** and leave the filename empty (Since the default is  **_buildspec.yml_**
@@ -46,7 +49,11 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 	- Edit the environment variables and add the following variables:
 	 ![Environment Variables](/assets/envVariables.png)
 	- The ENV_NAME_ variables refer to the different environments you would be deploying. For instance, I have 3 environments: dev, prod and uat. This allows us to deploy the lambda function at different stages (Creating a different function for each stage)
-  - And follow the on-screen instructions:
+
+### 2. Creating ***serverless.yml*** and ***buildspec.yml***
+
+ If you have a file called ***handlerFun1.js***, and it contains the function firstFun() which you would like to deploy.
+ - Follow the on-screen instructions:
   ![First Steps](/assets/firstSteps.png)
 	 - Here, I created a service called "CodeCommitTest" 
 	 - I set the AWS-region to us-east-2 (which is what my AWS console is set to). 
@@ -56,8 +63,9 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 	 - The **function name** is the name of the final lambda function (and is set in ***serverless.yml***).
 	 - By default, the only file added to the current lambda function (That will show up on the console) is the handler file provided in the module name. If you would like to include other files in the final lambda function that is deployed, you may edit the newly generated ***serverless.yml*** and add the required files to the **functions/*your_function*/package/patterns**
 	 - You may also edit/add any other properties in ***serverless.yml***
-	 - Finally, the tool generates a buildspec.yml file for your function.
+	 - Finally, the tool generates a buildspec.yml file for your function
 		 - If you want to deploy all lambda functions present in ***serverless.yml*** you can press **'a'** in the final step. Otherwise, press **'n'**.
+		 - You can also edit ***buildspec.yml*** if you want to deploy multiple functions. (By editing the `sls deploy` line and adding other functions
 	 - Once you have completed all your steps, you will see 2 new files ***serverless.yml*** (Which lists all the properties required to deploy using the Serverless Framework and ***buildspec.yml*** (Which instructs CodeBuild to deploy the function(s) using the given files and properties.
 
 
