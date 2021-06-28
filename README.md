@@ -64,6 +64,7 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 	 - You may also edit/add any other properties in ***serverless.yml***
 	 - Finally, the tool generates a buildspec.yml file for your function.
 		 - If you want to deploy all lambda functions present in ***serverless.yml*** you can press **'a'** in the final step. Otherwise, press **'n'**.
+		 - You can also edit ***buildspec.yml*** if you want to deploy multiple functions.
 	 - Once you have completed all your steps, you will see 2 new files ***serverless.yml*** (Which lists all the properties required to deploy using the Serverless Framework and ***buildspec.yml*** (Which instructs CodeBuild to deploy the function(s) using the given files and properties.
 
 
