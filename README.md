@@ -35,12 +35,12 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
   
 
 ### 1. Creating a CodeBuild Project
- - Create a CodeBuild Project (OPTION 1: using slsmanager)
+ - Create a CodeBuild Project **(OPTION 1: using slsmanager)**
  ![Steps to create a project](/assets/cbproj.png)
 	- You can use slsmanager to create a CodeBuild Project.
 	- You will need your AWS Access Key ID, your Secret Access Key, the default region and the URL to your CodeCommit Repository
-- Create a CodeBuild Project (OPTION 2: using AWS console)
-	- Skip these steps if you used slsmanager to create the project
+- Create a CodeBuild Project **(OPTION 2: using AWS console)**
+	- **Skip these steps if you used slsmanager to create the project**
 	- Set the source provider to **CodeCommit** and the repository to the newly created CodeCommit repository
 	- Pick the branch you will be pushing to
 	- In buildspec, choose **“Use a buildspec file”** and leave the filename empty (Since the default is  **_buildspec.yml_**
