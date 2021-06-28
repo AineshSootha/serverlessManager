@@ -120,7 +120,6 @@ def createCBRole(projName):
     )
     #except Exception:
     #    pass
-    print(IAMCreate_response['Role']['Arn'])
     return IAMCreate_response['Role']['Arn']
 
 
