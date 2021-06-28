@@ -39,6 +39,7 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
  ![Steps to create a project](/assets/cbproj.png)
 	- You can use slsmanager to create a CodeBuild Project.
 	- You will need your AWS Access Key ID, your Secret Access Key, the default region and the URL to your CodeCommit Repository
+	- Note that by default this tool will save all the required Environment Variables in plaintext. You can use the AWS console to change this.
 - Create a CodeBuild Project **(OPTION 2: using AWS console)**
 	- **Skip these steps if you used slsmanager to create the project**
 	- Set the source provider to **CodeCommit** and the repository to the newly created CodeCommit repository
