@@ -84,7 +84,7 @@ def createCBRole(projName):
             }
         ]
     }
-    '''
+
     dataPut = {
         "Version": "2012-10-17",
         "Statement": [
@@ -144,7 +144,7 @@ def createCBRole(projName):
             }
         ]
     }
-    '''
+
     IAMPolicy_response = IAM_client.create_policy(
         PolicyName=f'CodebuildBasePolicy-{projName}-role-policy',
         PolicyDocument=json.dumps(dataPut),
@@ -172,8 +172,6 @@ def createCBRole(projName):
     #    pass
     print(IAMCreate_response['Role']['Arn'])
     return IAMCreate_response['Role']['Arn']
-    
-    
 
 
 
@@ -249,6 +247,7 @@ def createCB(projName):
 
 
 '''
+
 def createSls(slsPath):
     print(f'{Fore.YELLOW}It seems like serverless.yml doesn\'t exist.\n{Style.RESET_ALL}Creating serverless.yml\n{Fore.YELLOW}For info, Visit: https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/{Style.RESET_ALL} ')
     service = input('Service Name: ')
