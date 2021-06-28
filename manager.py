@@ -35,7 +35,7 @@ def createCBRole(projName):
         }
     ]
     }
-
+    '''
     dataPut = {
         "Version": "2012-10-17",
         "Statement": [
@@ -148,7 +148,6 @@ def createCBRole(projName):
             }
         ]
     }
-    '''
     IAMPolicy_response = IAM_client.create_policy(
         PolicyName=f'CodebuildBasePolicy-{projName}-role-policy',
         PolicyDocument=json.dumps(dataPut),
