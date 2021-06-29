@@ -77,6 +77,6 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
    - This allows you to skip the preliminary steps in the CLI (Create CodeCommit Repo/ Create CodeBuild Project) and jump directly to adding functions to ***serverless.yml*** and (later) ***buildspec.yml***.
 
 ### Buildspec
-`slsmanager --buildspec / -b`
+`slsmanager --buildspec/-b`
 	
  - This allows you to skip all preliminary steps in the CLI and jump directly to adding deploy commands to ***buildspec.yml***.
