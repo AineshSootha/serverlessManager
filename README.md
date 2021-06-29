@@ -18,7 +18,7 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 ## Using the tool
 
  - Open a terminal window and navigate to the directory with the handler file. 
- - Run serverless manager on your terminal:
+ - Run serverless manager on your terminal:\
 	  `slsmanager`
   
 ### 1. Creating a CodeCommit Repository
