@@ -1,4 +1,4 @@
-service: sampleService
+service: mangerTest
 
 frameworkVersion: '2'
 
@@ -8,17 +8,37 @@ provider:
   lambdaHashingVersion: 20201221
   stage: dev
   region: us-east-2
-  package:
-    individually: true
+package:
+  individually: true
 
 functions:
-  sampleFun:
-    handler: handlerSample.sampleFun
+  fun5:
+    handler: handlerFun5.fun5
     package:
       patterns:
         - '!./**'
-        - 'handlerSample.js'
+        - 'handlerFun5.js'
     events:
       - http:
-          path: test/sampleFun
-        method: get
+          path: test/fun5
+          method: get
+  fun2:
+    handler: handler2.fun2
+    package:
+      patterns:
+        - '!./**'
+        - 'handler2.js'
+    events:
+      - http:
+          path: test/fun2
+          method: get
+  fun1:
+    handler: handler1.fun1
+    package:
+      patterns:
+        - '!./**'
+        - 'handler1.js'
+    events:
+      - http:
+          path: test/fun1
+          method: get

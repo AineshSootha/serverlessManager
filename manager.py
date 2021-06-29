@@ -35,7 +35,7 @@ def createRepo(repoName, repoDesc, creds):
     )
     creds.setRepoURL(repoCreate_response['repositoryMetadata']['cloneUrlHttp'])
 
-'''
+
 def commitToRepo(repoName,branchName,fName,creds):
     CC_client = boto3.client('codecommit', 
                             region_name=creds.AWS_DEFAULT_REGION, 
@@ -67,7 +67,7 @@ def commitToRepo(repoName,branchName,fName,creds):
             commitMessage=f"Added {fName}",
         )
 
-'''
+
 
 def createCBRole(projName, creds):
     IAM_client = boto3.client('iam', 
@@ -259,7 +259,7 @@ def createSls(slsPath):
     service = input('Service Name: ')
     region = input('Region: ')
     stage = input('Stage: ')
-    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  runtime: nodejs12.x\n  lambdaHashingVersion: 20201221\n  stage: {stage}\n  region: {region}\n  package:\n    individually: true\n\nfunctions:\n'
+    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  runtime: nodejs12.x\n  lambdaHashingVersion: 20201221\n  stage: {stage}\n  region: {region}\npackage:\n  individually: true\n\nfunctions:\n'
     with open('serverless.yml', 'w') as fSls:
         fSls.write(sls)
         
@@ -273,7 +273,7 @@ def addTosls(fname, module, funName):
                 break
             j += 1
         j += 1
-        dataLines.insert(j, f'  {funName}:\n    handler: {module}\n    package:\n      patterns:\n        - \'!./**\'\n        - \'{fname}\'\n    events:\n      - http:\n          path: test/{funName}\n        method: get\n')
+        dataLines.insert(j, f'  {funName}:\n    handler: {module}\n    package:\n      patterns:\n        - \'!./**\'\n        - \'{fname}\'\n    events:\n      - http:\n          path: test/{funName}\n          method: get\n')
         
     with open('serverless.yml', 'w') as fSls:    
         dataFinal = "".join(dataLines) 
@@ -284,19 +284,35 @@ def addToBSpec(env_name, allorOne, funName):
     deployCmd = f'sls deploy -v -s $ENV_NAME_{env_name} -f {funName}'
     if allorOne == 'A' or allorOne == 'a':
         deployCmd = f'sls deploy -v -s $ENV_NAME_{env_name}'
-
     fBspecLines = f'version: 0.1\nphases:\n  install:\n    commands:\n      - echo install commands\n      - npm install -g serverless\n  pre_build:\n    commands:\n      - echo No pre build commands yet\n  build:\n    commands:\n      - echo Build Deploy\n      - {deployCmd}\n  post_build:\n    commands:\n      - echo post build completed on `date`'
     with open('buildspec.yml', 'w') as fBspec:
         fBspec.writelines(fBspecLines)
         
 
+def addToBSpecList(env_name, allorOne, funNameList):
+    if allorOne == 'A' or allorOne == 'a':
+        deployCmd = f'      - sls deploy -v -s $ENV_NAME_{env_name}\n'
+    else:
+        deployCmd = ""
+        for funName in funNameList:
+            deployCmd = deployCmd + f'      - sls deploy -v -s $ENV_NAME_{env_name} -f {funName}\n'
+        
+    
+    fBspecLines = f'version: 0.1\nphases:\n  install:\n    commands:\n      - echo install commands\n      - npm install -g serverless\n  pre_build:\n    commands:\n      - echo No pre build commands yet\n  build:\n    commands:\n      - echo Build Deploy\n{deployCmd}  post_build:\n    commands:\n      - echo post build completed on `date`'
+    with open('buildspec.yml', 'w') as fBspec:
+        fBspec.writelines(fBspecLines)
+        
+
+
+
 @click.command()
 @click.option('--skip', '-s', is_flag=True)
-@click.option('--buildspec', '-b')
+@click.option('--buildspec', '-b', is_flag=True)
 @click.option('--add', '-a', is_flag=True)
 def main(skip, buildspec, add):
     print(f"{Fore.CYAN}========SLS Manager v 0.1.0========{Style.RESET_ALL}")
-    if(add != 1):
+
+    if(add != 1 and create != 1 and buildspec != 1):
         ccInput = input("Would you like to create a new CodeCommit Repo? (Y/N): ")
         if ccInput.lower() == 'y':
             AWS_ACCESS_KEY_ID = input('AWS ACCESS KEY ID: ')
@@ -318,11 +334,8 @@ def main(skip, buildspec, add):
             projName = input("Name of CodeBuild project: ")
             createCB(projName, creds)
 
-            
-        commitAll = 0
         slsPath = Path('serverless.yml')
         if not slsPath.exists():
-            commitAll = 1
             createSls(slsPath)
         env_name = input(f"ENV_NAME: ")
         module = input("Name of Module (Eg: handler.firstFun): ")
@@ -350,15 +363,47 @@ def main(skip, buildspec, add):
         print(f"{Fore.GREEN}Adding {env_name} to buildspec.yml.{Style.RESET_ALL} \nCheck Environment Variable config here: LINK")
         allorOne = input(f"Press A if you would like to deploy all lambda functions in repo (N otherwise): ")
         addToBSpec(env_name, allorOne, funName)
-    else:
-        module = input("Name of Module (Eg: handler.firstFun): ")
-        funName = input("Name of Function: ")
-        fName = module.split('.')[0] + '.js'
-        mName = module.split('.')[1]
-        fPath = Path(fName)
-        print(f"{Fore.GREEN}OK! Adding {module} to serverless.yml{Style.RESET_ALL}\n")
-        addTosls(fName, module, funName)
-
+    
+    elif add == 1:
+        slsPath = Path('serverless.yml')
+        addorNo = 'y'
+        if not slsPath.exists():
+            createSls(slsPath)
+            addorNo = input("Would you like to add functions to serverless.yml? (Y/N): ")
+        
+        if addorNo.lower() == 'y':
+            module = input("Name of Module (Eg: handler.firstFun): ")
+            funName = input("Name of Function: ")
+            fName = module.split('.')[0] + '.js'
+            mName = module.split('.')[1]
+            fPath = Path(fName)
+            print(f"{Fore.GREEN}OK! Adding {module} to serverless.yml{Style.RESET_ALL}\n")
+            addTosls(fName, module, funName)
+            more = input("Would you like to deploy other functions? (Y/N): ")
+            while more.lower() == 'y':
+                module = input("Name of Module (Eg: handler.firstFun): ")
+                funName = input("Name of Function: ")
+                fName = module.split('.')[0] + '.js'
+                mName = module.split('.')[1]
+                fPath = Path(fName)
+                print(f"{Fore.GREEN}OK! Adding {module} to serverless.yml{Style.RESET_ALL}\n")
+                addTosls(fName, module, funName)
+                more = input("Would you like to deploy other functions? (Y/N): ")
+   
+    elif buildspec == 1:
+        env_name = input(f"ENV_NAME: ")
+        allorOne = input(f"Press A if you would like to deploy all lambda functions in repo (N otherwise): ")
+        funName = ""
+        funNameList = []
+        if allorOne.lower() != 'a':
+            funName = input("Name of function: ")
+            more = input("Would you like to deploy other functions? (Y/N): ")
+            funNameList.append(funName)
+            while more.lower() == 'y':
+                funName = input("Name of function: ")
+                funNameList.append(funName)
+                more = input("Would you like to deploy other functions? (Y/N): ")
+        addToBSpecList(env_name, allorOne, funNameList)
 
 
 
