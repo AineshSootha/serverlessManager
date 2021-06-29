@@ -35,6 +35,39 @@ def createRepo(repoName, repoDesc, creds):
     )
     creds.setRepoURL(repoCreate_response['repositoryMetadata']['cloneUrlHttp'])
 
+'''
+def commitToRepo(repoName,branchName,fName,creds):
+    CC_client = boto3.client('codecommit', 
+                            region_name=creds.AWS_DEFAULT_REGION, 
+                            aws_access_key_id=creds.AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=creds.AWS_SECRET_ACCESS_KEY
+                            )
+    with open("buildspec.yml", "rb") as fin:
+        CC_response_bspec = CC_client.put_file(
+            repositoryName=repoName,
+            branchName=branchName,
+            fileContent=fin.read(),
+            filePath="buildspec.yml",
+            commitMessage='buildSpec.yml',
+        )
+    with open("buildspec.yml", "rb") as fin:
+        CC_response_sls = CC_client.put_file(
+            repositoryName=repoName,
+            branchName=branchName,
+            fileContent=fin.read(),
+            filePath="serverless.yml",
+            commitMessage='serverless.yml',
+        )
+    with open(fName, "rb") as fin:
+        CC_response = CC_client.put_file(
+            repositoryName=repoName,
+            branchName=branchName,
+            fileContent=fin.read(),
+            filePath=fName,
+            commitMessage=f"Added {fName}",
+        )
+
+'''
 
 def createCBRole(projName, creds):
     IAM_client = boto3.client('iam', 
@@ -260,7 +293,17 @@ def addToBSpec(env_name, allorOne, funName):
 @click.command()
 @click.option('--skip', '-s', is_flag=True)
 @click.option('--buildspec', '-b')
-def main(skip, buildspec):
+@click.option('--commit', '-c', is_flag=True)
+def main(skip, buildspec, commit):
+    if commit == 1:
+        AWS_ACCESS_KEY_ID = input('AWS ACCESS KEY ID: ')
+        AWS_SECRET_ACCESS_KEY = input('AWS SECRET ACCESS KEY: ')
+        AWS_DEFAULT_REGION = input('AWS DEFAULT REGION: ')
+        creds = credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION)
+        repoName = input("Repository Name: ")
+        branchName = input("Branch Name: ")
+        fName = input("File Name: ")
+        commitToRepo(repoName, branchName, fName, creds)
     print(f"{Fore.CYAN}========SLS Manager v 0.1.0========{Style.RESET_ALL}")
     ccInput = input("Would you like to create a new CodeCommit Repo? (Y/N): ")
     if ccInput.lower() == 'y':
@@ -284,9 +327,10 @@ def main(skip, buildspec):
         createCB(projName, creds)
 
         
-
+    commitAll = 0
     slsPath = Path('serverless.yml')
     if not slsPath.exists():
+        commitAll = 1
         createSls(slsPath)
     env_name = input(f"ENV_NAME: ")
     module = input("Name of Module (Eg: handler.firstFun): ")
@@ -316,7 +360,16 @@ def main(skip, buildspec):
     print(f"{Fore.GREEN}Adding {env_name} to buildspec.yml.{Style.RESET_ALL} \nCheck Environment Variable config here: LINK")
     allorOne = input(f"Press A if you would like to deploy all lambda functions in repo (N otherwise): ")
     addToBSpec(env_name, allorOne, funName)
-    
+    commitYN = input("Would you like to commit (and deploy) the function? (Y/N): ")
+    if commitYN.lower() == 'y':
+        if cbInput.lower != 'y' and ccInput.lower != 'y':
+            AWS_ACCESS_KEY_ID = input('AWS ACCESS KEY ID: ')
+            AWS_SECRET_ACCESS_KEY = input('AWS SECRET ACCESS KEY: ')
+            AWS_DEFAULT_REGION = input('AWS DEFAULT REGION: ')
+            creds = credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION)
+        repoName = input("Repository Name: ")
+        branchName = input("Branch Name: ")
+        commitToRepo(repoName, branchName, fName, creds)
 
 
 
