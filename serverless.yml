@@ -12,16 +12,6 @@ provider:
     individually: true
 
 functions:
-  asd:
-    handler: asd.asd
-    package:
-      patterns:
-        - '!./**'
-        - 'asd.js'
-    events:
-      - http:
-          path: test/asd
-        method: get
   sampleFun:
     handler: handlerSample.sampleFun
     package:
