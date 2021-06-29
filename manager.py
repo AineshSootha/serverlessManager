@@ -262,8 +262,8 @@ def createSls(slsPath):
     sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  runtime: nodejs12.x\n  lambdaHashingVersion: 20201221\n  stage: {stage}\n  region: {region}\npackage:\n  individually: true\n\nfunctions:\n'
     with open('serverless.yml', 'w') as fSls:
         fSls.write(sls)
-        
-        
+
+
 def addTosls(fname, module, funName):
     with open('serverless.yml', 'r') as fSls:
         dataLines = fSls.readlines()
@@ -296,82 +296,45 @@ def addToBSpecList(env_name, allorOne, funNameList):
         deployCmd = ""
         for funName in funNameList:
             deployCmd = deployCmd + f'      - sls deploy -v -s $ENV_NAME_{env_name} -f {funName}\n'
-        
-    
+
     fBspecLines = f'version: 0.1\nphases:\n  install:\n    commands:\n      - echo install commands\n      - npm install -g serverless\n  pre_build:\n    commands:\n      - echo No pre build commands yet\n  build:\n    commands:\n      - echo Build Deploy\n{deployCmd}  post_build:\n    commands:\n      - echo post build completed on `date`'
     with open('buildspec.yml', 'w') as fBspec:
         fBspec.writelines(fBspecLines)
-        
 
 
+def bspecCLI():
+    env_name = input(f"ENV_NAME: ")
+    allorOne = input(f"Press A if you would like to deploy all lambda functions in repo (N otherwise): ")
+    funName = ""
+    funNameList = []
+    if allorOne.lower() != 'a':
+        funName = input("Name of function: ")
+        more = input("Would you like to deploy other functions? (Y/N): ")
+        funNameList.append(funName)
+        while more.lower() == 'y':
+            funName = input("Name of function: ")
+            funNameList.append(funName)
+            more = input("Would you like to deploy other functions? (Y/N): ")
+    addToBSpecList(env_name, allorOne, funNameList)
 
-@click.command()
-@click.option('--skip', '-s', is_flag=True)
-@click.option('--buildspec', '-b', is_flag=True)
-@click.option('--add', '-a', is_flag=True)
-def main(skip, buildspec, add):
-    print(f"{Fore.CYAN}========SLS Manager v 0.1.0========{Style.RESET_ALL}")
 
-    if(add != 1 and create != 1 and buildspec != 1):
-        ccInput = input("Would you like to create a new CodeCommit Repo? (Y/N): ")
-        if ccInput.lower() == 'y':
-            AWS_ACCESS_KEY_ID = input('AWS ACCESS KEY ID: ')
-            AWS_SECRET_ACCESS_KEY = input('AWS SECRET ACCESS KEY: ')
-            AWS_DEFAULT_REGION = input('AWS DEFAULT REGION: ')
-            repoName = input('CodeCommit Repository Name: ')
-            repoDesc = input('Repository description (Leave empty if blank): ')
-            creds = credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION)
-            createRepo(repoName, repoDesc, creds)
-            creds.printRepoURL()
-        cbInput = input("Would you like to create a new CodeBuild project? (Y/N): ")
-        if cbInput.lower() == 'y':
-            if ccInput.lower() != 'y':
-                AWS_ACCESS_KEY_ID = input('AWS ACCESS KEY ID: ')
-                AWS_SECRET_ACCESS_KEY = input('AWS SECRET ACCESS KEY: ')
-                AWS_DEFAULT_REGION = input('AWS DEFAULT REGION: ')
-                repoURL = input('CodeCommit Repository URL: ')
-                creds = credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, repoURL)
-            projName = input("Name of CodeBuild project: ")
-            createCB(projName, creds)
-
-        slsPath = Path('serverless.yml')
-        if not slsPath.exists():
-            createSls(slsPath)
-        env_name = input(f"ENV_NAME: ")
+def addCLI():
+    slsPath = Path('serverless.yml')
+    addorNo = 'y'
+    if not slsPath.exists():
+        createSls(slsPath)
+        addorNo = input("Would you like to add functions to serverless.yml? (Y/N): ")
+    
+    if addorNo.lower() == 'y':
         module = input("Name of Module (Eg: handler.firstFun): ")
         funName = input("Name of Function: ")
         fName = module.split('.')[0] + '.js'
         mName = module.split('.')[1]
         fPath = Path(fName)
-        if skip == 1:
-            print(f"{Fore.YELLOW}Skipping Checks")
-            
-        else:
-            if fPath.exists():
-                with open(fName) as fin:
-                    if mName not in fin.read():
-                        print(f"{Fore.RED}Module {mName} Not found in {fName}! \n{Fore.YELLOW}Please check the name or run with -s/--skip.{Style.RESET_ALL}")
-                        return
-            else:
-                print(f"{Fore.RED}Path {fName} does not exist! \n{Fore.YELLOW}If you still want to add it, run program with -s or --skip{Style.RESET_ALL}")
-                return
-        
         print(f"{Fore.GREEN}OK! Adding {module} to serverless.yml{Style.RESET_ALL}\n")
         addTosls(fName, module, funName)
-        print(f"If you want to add more properties, \n{Fore.YELLOW}visit: https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/{Style.RESET_ALL}\n")
-        print(f"{Fore.YELLOW}If you would like to add more files (Other than '{fName}') to the lambda function, edit serverless.yml and add the required files to the \'package\' section under your newly added function.{Style.RESET_ALL}\n")
-        print(f"{Fore.GREEN}Adding {env_name} to buildspec.yml.{Style.RESET_ALL} \nCheck Environment Variable config here: LINK")
-        allorOne = input(f"Press A if you would like to deploy all lambda functions in repo (N otherwise): ")
-        addToBSpec(env_name, allorOne, funName)
-    
-    elif add == 1:
-        slsPath = Path('serverless.yml')
-        addorNo = 'y'
-        if not slsPath.exists():
-            createSls(slsPath)
-            addorNo = input("Would you like to add functions to serverless.yml? (Y/N): ")
-        
-        if addorNo.lower() == 'y':
+        more = input("Would you like to deploy other functions? (Y/N): ")
+        while more.lower() == 'y':
             module = input("Name of Module (Eg: handler.firstFun): ")
             funName = input("Name of Function: ")
             fName = module.split('.')[0] + '.js'
@@ -380,31 +343,60 @@ def main(skip, buildspec, add):
             print(f"{Fore.GREEN}OK! Adding {module} to serverless.yml{Style.RESET_ALL}\n")
             addTosls(fName, module, funName)
             more = input("Would you like to deploy other functions? (Y/N): ")
-            while more.lower() == 'y':
-                module = input("Name of Module (Eg: handler.firstFun): ")
-                funName = input("Name of Function: ")
-                fName = module.split('.')[0] + '.js'
-                mName = module.split('.')[1]
-                fPath = Path(fName)
-                print(f"{Fore.GREEN}OK! Adding {module} to serverless.yml{Style.RESET_ALL}\n")
-                addTosls(fName, module, funName)
-                more = input("Would you like to deploy other functions? (Y/N): ")
+        print(f"If you want to add more properties, \n{Fore.YELLOW}visit: https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/{Style.RESET_ALL}\n")
+        print(f"{Fore.YELLOW}If you would like to add more files (Other than '{fName}') to the lambda function, edit serverless.yml and add the required files to the \'package\' section under your newly added function.{Style.RESET_ALL}\n")
+    openBspec = input("Would you like to create/update Buildspec.yml? (Y/N): ")
+    if openBspec.lower() == 'y':
+        bspecCLI()
+
+
+def ccCLI():
+    AWS_ACCESS_KEY_ID = input('AWS ACCESS KEY ID: ')
+    AWS_SECRET_ACCESS_KEY = input('AWS SECRET ACCESS KEY: ')
+    AWS_DEFAULT_REGION = input('AWS DEFAULT REGION: ')
+    repoName = input('CodeCommit Repository Name: ')
+    repoDesc = input('Repository description (Leave empty if blank): ')
+    creds = credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION)
+    createRepo(repoName, repoDesc, creds)
+    creds.printRepoURL()
+    return creds
+
+
+def cbCLI(creds):
+    if not creds:
+        AWS_ACCESS_KEY_ID = input('AWS ACCESS KEY ID: ')
+        AWS_SECRET_ACCESS_KEY = input('AWS SECRET ACCESS KEY: ')
+        AWS_DEFAULT_REGION = input('AWS DEFAULT REGION: ')
+        repoURL = input('CodeCommit Repository URL: ')
+        creds = credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, repoURL)
+    projName = input("Name of CodeBuild project: ")
+    createCB(projName, creds)
+    return creds
+
+@click.command()
+@click.option('--skip', '-s', is_flag=True)
+@click.option('--buildspec', '-b', is_flag=True)
+@click.option('--add', '-a', is_flag=True)
+def main(skip, buildspec, add):
+    print(f"{Fore.CYAN}========SLS Manager v 0.1.0========{Style.RESET_ALL}")
+
+    if(add != 1 and buildspec != 1):
+        creds = None
+        ccInput = input("Would you like to create a new CodeCommit Repo? (Y/N): ")
+        if ccInput.lower() == 'y':
+            creds = ccCLI()
+        
+        cbInput = input("Would you like to create a new CodeBuild project? (Y/N): ")
+        if cbInput.lower() == 'y':
+            creds = cbCLI(creds)
+        
+        addCLI()
+
+    elif add == 1:
+        addCLI()
    
     elif buildspec == 1:
-        env_name = input(f"ENV_NAME: ")
-        allorOne = input(f"Press A if you would like to deploy all lambda functions in repo (N otherwise): ")
-        funName = ""
-        funNameList = []
-        if allorOne.lower() != 'a':
-            funName = input("Name of function: ")
-            more = input("Would you like to deploy other functions? (Y/N): ")
-            funNameList.append(funName)
-            while more.lower() == 'y':
-                funName = input("Name of function: ")
-                funNameList.append(funName)
-                more = input("Would you like to deploy other functions? (Y/N): ")
-        addToBSpecList(env_name, allorOne, funNameList)
-
+        bspecCLI()
 
 
 

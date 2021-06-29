@@ -10,9 +10,7 @@ phases:
   build:
     commands:
       - echo Build Deploy
-      - sls deploy -v -s $ENV_NAME_dev -f handler1.fun1
-      - sls deploy -v -s $ENV_NAME_dev -f handler2.fun2
-      - sls deploy -v -s $ENV_NAME_dev -f handler3.fun3
+      - sls deploy -v -s $ENV_NAME_dev -f fun1
   post_build:
     commands:
       - echo post build completed on `date`

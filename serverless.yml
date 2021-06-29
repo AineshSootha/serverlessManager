@@ -12,6 +12,26 @@ package:
   individually: true
 
 functions:
+  fun11:
+    handler: handler11.fun11
+    package:
+      patterns:
+        - '!./**'
+        - 'handler11.js'
+    events:
+      - http:
+          path: test/fun11
+          method: get
+  fun10:
+    handler: handler10.funtest
+    package:
+      patterns:
+        - '!./**'
+        - 'handler10.js'
+    events:
+      - http:
+          path: test/fun10
+          method: get
   fun5:
     handler: handlerFun5.fun5
     package:
