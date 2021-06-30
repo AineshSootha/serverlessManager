@@ -17,7 +17,7 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 
 ## Using the tool
 
-### On your Local Computer:
+## On your Local Computer:
  - Open a terminal window and navigate to the directory with the handler file. 
  - Run serverless manager on your terminal:
 	  `slsmanager`
@@ -69,7 +69,7 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 		 - If you want to deploy all lambda functions present in ***serverless.yml*** you can press **'a'** in the final step. Otherwise, press **'n'**.
 	 - Once you have completed all your steps, you will see 2 new files ***serverless.yml*** (Which lists all the properties required to deploy using the Serverless Framework and ***buildspec.yml*** (Which instructs CodeBuild to deploy the function(s) using the given files and properties.
 
-### Directly through AWS CodeBuild (> v0.1.7) :
+## Directly through AWS CodeBuild (> v0.1.7) :
  - Alternatively, Serverless Manager can directly be used from AWS CodeBuild. 
  - Set up the required CodeCommit Repo, CodePipeline and the CodeBuild Project.
 
