@@ -18,7 +18,7 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 ## Using the tool
 
  - Open a terminal window and navigate to the directory with the handler file. 
- - Run serverless manager on your terminal:
+ - Run serverless manager on your terminal:\
 	  `slsmanager`
   
 ### 1. Creating a CodeCommit Repository
@@ -69,4 +69,14 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 	 - Once you have completed all your steps, you will see 2 new files ***serverless.yml*** (Which lists all the properties required to deploy using the Serverless Framework and ***buildspec.yml*** (Which instructs CodeBuild to deploy the function(s) using the given files and properties.
 
 
- 
+ ## Options
+- There are a few config options you can use while running **slsmanager**
+### Add / Create
+   `slsmanager --add/-a` 
+   
+   - This allows you to skip the preliminary steps in the CLI (Create CodeCommit Repo/ Create CodeBuild Project) and jump directly to adding functions to ***serverless.yml*** and (later) ***buildspec.yml***.
+
+### Buildspec
+`slsmanager --buildspec/-b`
+	
+ - This allows you to skip all preliminary steps in the CLI and jump directly to adding deploy commands to ***buildspec.yml***.
