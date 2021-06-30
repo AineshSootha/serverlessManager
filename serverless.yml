@@ -1,10 +1,9 @@
-service: mangerTest
+service: managerDemoTest
 
 frameworkVersion: '2'
 
 provider:
   name: aws
-  runtime: nodejs12.x
   lambdaHashingVersion: 20201221
   stage: dev
   region: us-east-2
@@ -12,53 +11,36 @@ package:
   individually: true
 
 functions:
-  fun11:
-    handler: handler11.fun11
+  testing_index:
+    runtime: nodejs12.x
+    handler: testing/index.handler
     package:
       patterns:
         - '!./**'
-        - 'handler11.js'
+        - 'testing/index.js'
     events:
       - http:
-          path: test/fun11
+          path: dev/testing_index
           method: get
-  fun10:
-    handler: handler10.funtest
+  dev_lambda_function:
+    runtime: python3
+    handler: dev/lambda_function.lambda_handler
     package:
       patterns:
         - '!./**'
-        - 'handler10.js'
+        - 'dev/lambda_function.py'
     events:
       - http:
-          path: test/fun10
+          path: dev/dev_lambda_function
           method: get
-  fun5:
-    handler: handlerFun5.fun5
+  backend_lambda_function:
+    runtime: python3
+    handler: backend/lambda_function.lambda_handler
     package:
       patterns:
         - '!./**'
-        - 'handlerFun5.js'
+        - 'backend/lambda_function.py'
     events:
       - http:
-          path: test/fun5
-          method: get
-  fun2:
-    handler: handler2.fun2
-    package:
-      patterns:
-        - '!./**'
-        - 'handler2.js'
-    events:
-      - http:
-          path: test/fun2
-          method: get
-  fun1:
-    handler: handler1.fun1
-    package:
-      patterns:
-        - '!./**'
-        - 'handler1.js'
-    events:
-      - http:
-          path: test/fun1
+          path: dev/backend_lambda_function
           method: get

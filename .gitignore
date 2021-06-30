@@ -1,3 +1,7 @@
 credentials.py
 __pycache__
-handlerFun*
+handler*
+ui
+testing
+dev
+backend

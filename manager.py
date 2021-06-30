@@ -8,7 +8,11 @@ import json
 import time
 from progress.bar import Bar
 import os
+import glob
+import os.path as path
+import importlib
 
+__VERSION__ = "0.1.7"
 init() #colorama
 
 class credentials:
@@ -22,6 +26,12 @@ class credentials:
     def printRepoURL(self):
         print(f"The HTTP clone URL for the repo: {Fore.YELLOW}{self.repoURL}{Style.RESET_ALL}")
 
+
+
+
+
+
+'''AWS Stuff'''
 
 def createRepo(repoName, repoDesc, creds):
     CC_client = boto3.client('codecommit', 
@@ -66,7 +76,6 @@ def commitToRepo(repoName,branchName,fName,creds):
             filePath=fName,
             commitMessage=f"Added {fName}",
         )
-
 
 
 def createCBRole(projName, creds):
@@ -253,18 +262,32 @@ def createCB(projName, creds):
         }
     )
 
+'''Serverless Framework Stuff'''
 
-def createSls(slsPath):
-    print(f'{Fore.YELLOW}It seems like serverless.yml doesn\'t exist.\n{Style.RESET_ALL}Creating serverless.yml\n{Fore.YELLOW}For info, Visit: https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/{Style.RESET_ALL} ')
-    service = input('Service Name: ')
-    region = input('Region: ')
-    stage = input('Stage: ')
-    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  runtime: nodejs12.x\n  lambdaHashingVersion: 20201221\n  stage: {stage}\n  region: {region}\npackage:\n  individually: true\n\nfunctions:\n'
+def makePyModules(py_fileList, stage):
+    for pyFile in py_fileList:
+        relPath = path.relpath(pyFile)
+        module = relPath.split(".")[0] + "." + "lambda_handler"
+        funName = relPath.split(".")[0].replace('/', '_')
+        addTosls(relPath, module, funName, "python3", stage)
+
+
+def makeJSModules(js_fileList, stage):
+    for jsFile in js_fileList:
+        relPath = path.relpath(jsFile)
+        module = relPath.split(".")[0] + "." + "handler"
+        funName = relPath.split(".")[0].replace('/', '_')
+        addTosls(relPath, module, funName, "nodejs12.x", stage)
+
+
+def createSls(service, region, stage):
+    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  lambdaHashingVersion: 20201221\n  stage: {stage}\n  region: {region}\npackage:\n  individually: true\n\nfunctions:\n'
     with open('serverless.yml', 'w') as fSls:
         fSls.write(sls)
+    print(f"{Fore.GREEN}Serverless.yml created{Style.RESET_ALL}")
 
 
-def addTosls(fname, module, funName):
+def addTosls(fname, module, funName, runtime, stage):
     with open('serverless.yml', 'r') as fSls:
         dataLines = fSls.readlines()
         j = 0
@@ -273,7 +296,7 @@ def addTosls(fname, module, funName):
                 break
             j += 1
         j += 1
-        dataLines.insert(j, f'  {funName}:\n    handler: {module}\n    package:\n      patterns:\n        - \'!./**\'\n        - \'{fname}\'\n    events:\n      - http:\n          path: test/{funName}\n          method: get\n')
+        dataLines.insert(j, f'  {funName}:\n    runtime: {runtime}\n    handler: {module}\n    package:\n      patterns:\n        - \'!./**\'\n        - \'{fname}\'\n    events:\n      - http:\n          path: {stage}/{funName}\n          method: get\n')
         
     with open('serverless.yml', 'w') as fSls:    
         dataFinal = "".join(dataLines) 
@@ -301,6 +324,7 @@ def addToBSpecList(env_name, allorOne, funNameList):
     with open('buildspec.yml', 'w') as fBspec:
         fBspec.writelines(fBspecLines)
 
+'''CLI Stuff'''
 
 def bspecCLI():
     env_name = input(f"ENV_NAME: ")
@@ -318,11 +342,19 @@ def bspecCLI():
     addToBSpecList(env_name, allorOne, funNameList)
 
 
+def createslsCLI():
+    print(f'{Fore.YELLOW}It seems like serverless.yml doesn\'t exist.\n{Style.RESET_ALL}Creating serverless.yml\n{Fore.YELLOW}For info, Visit: https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/{Style.RESET_ALL} ')
+    service = input('Service Name: ')
+    region = input('Region: ')
+    stage = input('Stage: ')
+    createSls(service, region, stage)
+
+
 def addCLI():
     slsPath = Path('serverless.yml')
     addorNo = 'y'
     if not slsPath.exists():
-        createSls(slsPath)
+        createslsCLI()
         addorNo = input("Would you like to add functions to serverless.yml? (Y/N): ")
     
     if addorNo.lower() == 'y':
@@ -373,14 +405,28 @@ def cbCLI(creds):
     createCB(projName, creds)
     return creds
 
+
+
+
+def skipCLI(service, region, stage):
+    createSls(service, region, stage)
+    js_fileList = glob.glob(os.getcwd() + "/**/index.js", recursive=True)
+    py_fileList = glob.glob(os.getcwd() + "/**/lambda_function.py", recursive=True)
+    makePyModules(py_fileList, stage)
+    makeJSModules(js_fileList, stage)
+   
+    
+
+
 @click.command()
-@click.option('--skip', '-s', is_flag=True)
+@click.option('--nocli', '-n', is_flag=True)
+@click.option('--options', '-o', nargs=3, type=str)
 @click.option('--buildspec', '-b', is_flag=True)
 @click.option('--add', '-a', is_flag=True)
-def main(skip, buildspec, add):
-    print(f"{Fore.CYAN}========SLS Manager v 0.1.0========{Style.RESET_ALL}")
+def main(nocli, options, buildspec, add):
+    print(f"{Fore.CYAN}========SLS Manager v{__VERSION__}========{Style.RESET_ALL}")
 
-    if(add != 1 and buildspec != 1):
+    if(add != 1 and buildspec != 1 and nocli != 1):
         creds = None
         ccInput = input("Would you like to create a new CodeCommit Repo? (Y/N): ")
         if ccInput.lower() == 'y':
@@ -398,7 +444,9 @@ def main(skip, buildspec, add):
     elif buildspec == 1:
         bspecCLI()
 
-
+    elif nocli == 1:
+        service, region, stage = options
+        skipCLI(service, region, stage)
 
 if __name__ == "__main__":
     main()
