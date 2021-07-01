@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf8") as fh:
 
 setuptools.setup(
     name="slsmanager",
-    version="0.1.8",
+    version="0.1.9",
     author="Ainesh Sootha",
     author_email="aineshsootha@gmail.com",
     description="A basic tool that simplifies the deployment of AWS lambda functions",
