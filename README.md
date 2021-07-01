@@ -1,5 +1,9 @@
 # Serverless Manager
-
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/AineshSootha/serverlessManager/commits)
+[![PyPI version shields.io](https://img.shields.io/pypi/v/slsmanager)](https://pypi.org/project/slsmanager/)
+[![PyPI Wheel](https://img.shields.io/pypi/wheel/slsmanager)](https://pypi.org/project/slsmanager/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/slsmanager)](https://pypi.org/project/slsmanager/)
+[![License](https://img.shields.io/pypi/l/slsmanager)](https://github.com/AineshSootha/serverlessManager/blob/main/LICENSE)\
 A basic Python Tool that simplifies the deployment of multiple AWS Lambda functions directly from an AWS CodeCommit Repository.
 
     pip install slsmanager
@@ -72,6 +76,11 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 ## Directly through AWS CodeBuild (> v0.1.7) :
  - Alternatively, Serverless Manager can directly be used from AWS CodeBuild. 
  - Set up the required CodeCommit Repo, CodePipeline and the CodeBuild Project.
+ - Create a ***buildspec.yml*** file using the provided template.
+ - Create an environment variable **SERVICE_NAME** in the CodeBuild project and set its value to whatever you want the service to be called.
+ - Add this ***buildspec.yml*** file to the repository along with your handlers 
+ - For now, the js handlers need to be called ***index.js*** and python handlers need to be called ***lambda_function.py***. Place these handlers in sub-directories (UI, testing, backend).
+ - Once you commit/push these changes, CodeBuild will automatically run Serverless Manager and create a ***serverless.yml*** file (which will be removed after deployment).
 
  ## Options
 - There are a few config options you can use while running **slsmanager**
@@ -81,6 +90,17 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
    - This allows you to skip the preliminary steps in the CLI (Create CodeCommit Repo/ Create CodeBuild Project) and jump directly to adding functions to ***serverless.yml*** and (later) ***buildspec.yml***.
 
 ### Buildspec
-`slsmanager --buildspec / -b`
+`slsmanager --buildspec/-b`
 	
  - This allows you to skip all preliminary steps in the CLI and jump directly to adding deploy commands to ***buildspec.yml***.
+
+### NoCLI
+`slsmanager --nocli/-n`
+
+- **REQUIRES** `-o` to also be used
+- This allows you to deploy the functions directly from codeCommit without needing to create a ***serverless.yml***. Follow the steps above.
+
+### Options
+`slsmanager -n -o "service" "region" "stage"`
+
+- Options required for the noCLI method.
