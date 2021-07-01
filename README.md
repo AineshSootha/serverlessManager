@@ -1,5 +1,5 @@
 # Serverless Manager
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/AineshSootha/serverlessManager/commit-activity)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/AineshSootha/serverlessManager/commits/master)
 [![PyPI version shields.io](https://img.shields.io/pypi/v/slsmanager)](https://pypi.org/project/slsmanager/)
 [![PyPI Wheel](https://img.shields.io/pypi/wheel/slsmanager)](https://pypi.org/project/slsmanager/)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/slsmanager)](https://pypi.org/project/slsmanager/)
