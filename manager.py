@@ -269,7 +269,7 @@ def makePyModules(py_fileList, stage):
         relPath = path.relpath(pyFile)
         module = relPath.split(".")[0] + "." + "lambda_handler"
         funName = relPath.split(".")[0].replace('/', '_')
-        addTosls(relPath, module, funName, "python3", stage)
+        addTosls(relPath, module, funName, "python3.7", stage)
 
 
 def makeJSModules(js_fileList, stage):
