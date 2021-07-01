@@ -266,7 +266,7 @@ def makePyModules(py_fileList, stage):
         relPath = path.relpath(pyFile)
         module = relPath.split(".")[0] + "." + "lambda_handler"
         funName = relPath.split(".")[0].replace('/', '_')
-        funName = funName[:-15]
+        funName = funName[:-16]
         addTosls(relPath, module, funName, "python3.7", stage)
         print(module)
 
@@ -276,7 +276,7 @@ def makeJSModules(js_fileList, stage):
         relPath = path.relpath(jsFile)
         module = relPath.split(".")[0] + "." + "handler"
         funName = relPath.split(".")[0].replace('/', '_')
-        funName = funName[:-5]
+        funName = funName[:-6]
         addTosls(relPath, module, funName, "nodejs12.x", stage)
 
 
