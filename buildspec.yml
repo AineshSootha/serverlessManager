@@ -1,0 +1,18 @@
+version: 0.1
+phases:
+  install:
+    commands:
+      - echo install commands
+      - pip install slsmanager
+      - npm install -g serverless
+  pre_build:
+    commands:
+      - slsmanager -n -o $SERVICE_NAME $AWS_DEFAULT_REGION $ENV_NAME_dev
+  build:
+    commands:
+      - echo Build Deploy
+      - sls deploy -v -s $ENV_NAME_dev
+  post_build:
+    commands:
+      - echo post build completed on `date`
+      - rm serverless.yml
