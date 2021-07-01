@@ -1,5 +1,5 @@
 # Serverless Manager
-
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/AineshSootha/serverlessManager/commit-activity)
 A basic Python Tool that simplifies the deployment of multiple AWS Lambda functions directly from an AWS CodeCommit Repository.
 
     pip install slsmanager
