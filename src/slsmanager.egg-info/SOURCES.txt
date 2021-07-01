@@ -1,0 +1,13 @@
+LICENSE
+README.md
+pyproject.toml
+setup.cfg
+setup.py
+src/slsmanager/__init__.py
+src/slsmanager/manager.py
+src/slsmanager.egg-info/PKG-INFO
+src/slsmanager.egg-info/SOURCES.txt
+src/slsmanager.egg-info/dependency_links.txt
+src/slsmanager.egg-info/entry_points.txt
+src/slsmanager.egg-info/requires.txt
+src/slsmanager.egg-info/top_level.txt
