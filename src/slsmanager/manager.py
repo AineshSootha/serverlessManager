@@ -12,7 +12,7 @@ import glob
 import os.path as path
 import importlib
 
-__VERSION__ = "0.1.9"
+__VERSION__ = "0.1.10"
 init() #colorama
 
 class credentials:
@@ -25,9 +25,6 @@ class credentials:
         self.repoURL = repoURL
     def printRepoURL(self):
         print(f"The HTTP clone URL for the repo: {Fore.YELLOW}{self.repoURL}{Style.RESET_ALL}")
-
-
-
 
 
 
@@ -269,7 +266,7 @@ def makePyModules(py_fileList, stage):
         relPath = path.relpath(pyFile)
         module = relPath.split(".")[0] + "." + "lambda_handler"
         funName = relPath.split(".")[0].replace('/', '_')
-        funName = funName[:5] if len(funName) > 5 else funName
+        funName = funName[:-15]
         addTosls(relPath, module, funName, "python3.7", stage)
         print(module)
 
@@ -279,7 +276,7 @@ def makeJSModules(js_fileList, stage):
         relPath = path.relpath(jsFile)
         module = relPath.split(".")[0] + "." + "handler"
         funName = relPath.split(".")[0].replace('/', '_')
-        funName = funName[:5] if len(funName) > 5 else funName
+        funName = funName[:-5]
         addTosls(relPath, module, funName, "nodejs12.x", stage)
 
 
@@ -407,7 +404,6 @@ def cbCLI(creds):
     projName = input("Name of CodeBuild project: ")
     createCB(projName, creds)
     return creds
-
 
 
 

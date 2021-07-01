@@ -1,11 +1,12 @@
 import setuptools
+__VERSION__ = "0.1.10"
 
 with open("README.md", "r", encoding="utf8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="slsmanager",
-    version="0.1.9",
+    version=__VERSION__,
     author="Ainesh Sootha",
     author_email="aineshsootha@gmail.com",
     description="A basic tool that simplifies the deployment of AWS lambda functions",
