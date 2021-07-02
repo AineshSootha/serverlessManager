@@ -281,7 +281,7 @@ def makeJSModules(js_fileList):
 
 
 def createSls(service, region):
-    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  lambdaHashingVersion: 20201221\n  region: {region}\npackage:\n  individually: true\nplugins:\n  - serverless-aws-alias\n\nfunctions:\n'
+    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  lambdaHashingVersion: 20201221\n  region: {region}\npackage:\n  individually: true\n\nfunctions:\n'
     with open('serverless.yml', 'w') as fSls:
         fSls.write(sls)
     print(f"{Fore.GREEN}Serverless.yml created{Style.RESET_ALL}")
@@ -296,7 +296,7 @@ def addTosls(fname, module, funName, runtime):
                 break
             j += 1
         j += 1
-        dataLines.insert(j, f'  {funName}:\n    runtime: {runtime}\n    handler: {module}\n    package:\n      patterns:\n        - \'!./**\'\n        - \'{fname}\'\n    events:\n      - http:\n          path: /{funName}\n          method: get\n')
+        dataLines.insert(j, f'  {funName}:\n    runtime: {runtime}\n    handler: {module}\n    package:\n      patterns:\n        - \'{fname}\'\n    events:\n      - http:\n          path: /{funName}\n          method: get\n')
         
     with open('serverless.yml', 'w') as fSls:    
         dataFinal = "".join(dataLines) 
