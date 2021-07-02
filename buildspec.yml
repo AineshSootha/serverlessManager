@@ -7,11 +7,11 @@ phases:
       - npm install -g serverless
   pre_build:
     commands:
-      - slsmanager -n -o $SERVICE_NAME $AWS_DEFAULT_REGION $ENV_NAME_dev
+      - slsmanager -n -o $SERVICE_NAME $AWS_DEFAULT_REGION
   build:
     commands:
       - echo Build Deploy
-      - sls deploy -v -s $ENV_NAME_dev
+      - sls deploy -v --alias dev
   post_build:
     commands:
       - echo post build completed on `date`
