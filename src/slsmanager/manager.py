@@ -261,33 +261,33 @@ def createCB(projName, creds):
 
 '''Serverless Framework Stuff'''
 
-def makePyModules(py_fileList, stage):
+def makePyModules(py_fileList):
     for pyFile in py_fileList:
         relPath = path.relpath(pyFile)
         module = relPath.split(".")[0] + "." + "lambda_handler"
         funName = relPath.split(".")[0].replace('/', '_')
         funName = funName[:-16]
-        addTosls(relPath, module, funName, "python3.7", stage)
+        addTosls(relPath, module, funName, "python3.7")
         print(module)
 
 
-def makeJSModules(js_fileList, stage):
+def makeJSModules(js_fileList):
     for jsFile in js_fileList:
         relPath = path.relpath(jsFile)
         module = relPath.split(".")[0] + "." + "handler"
         funName = relPath.split(".")[0].replace('/', '_')
         funName = funName[:-6]
-        addTosls(relPath, module, funName, "nodejs12.x", stage)
+        addTosls(relPath, module, funName, "nodejs12.x")
 
 
-def createSls(service, region, stage):
-    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  lambdaHashingVersion: 20201221\n  stage: {stage}\n  region: {region}\npackage:\n  individually: true\n\nfunctions:\n'
+def createSls(service, region):
+    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  lambdaHashingVersion: 20201221\n  region: {region}\npackage:\n  individually: true\n\nfunctions:\n'
     with open('serverless.yml', 'w') as fSls:
         fSls.write(sls)
     print(f"{Fore.GREEN}Serverless.yml created{Style.RESET_ALL}")
 
 
-def addTosls(fname, module, funName, runtime, stage):
+def addTosls(fname, module, funName, runtime):
     with open('serverless.yml', 'r') as fSls:
         dataLines = fSls.readlines()
         j = 0
@@ -296,7 +296,7 @@ def addTosls(fname, module, funName, runtime, stage):
                 break
             j += 1
         j += 1
-        dataLines.insert(j, f'  {funName}:\n    runtime: {runtime}\n    handler: {module}\n    package:\n      patterns:\n        - \'!./**\'\n        - \'{fname}\'\n    events:\n      - http:\n          path: {stage}/{funName}\n          method: get\n')
+        dataLines.insert(j, f'  {funName}:\n    runtime: {runtime}\n    handler: {module}\n    package:\n      patterns:\n        - \'!./**\'\n        - \'{fname}\'\n    events:\n      - http:\n          path: /{funName}\n          method: get\n')
         
     with open('serverless.yml', 'w') as fSls:    
         dataFinal = "".join(dataLines) 
@@ -347,7 +347,7 @@ def createslsCLI():
     service = input('Service Name: ')
     region = input('Region: ')
     stage = input('Stage: ')
-    createSls(service, region, stage)
+    createSls(service, region)
 
 
 def addCLI():
@@ -407,19 +407,19 @@ def cbCLI(creds):
 
 
 
-def skipCLI(service, region, stage):
-    createSls(service, region, stage)
+def skipCLI(service, region):
+    createSls(service, region)
     js_fileList = glob.glob(os.getcwd() + "/**/index.js", recursive=True)
     py_fileList = glob.glob(os.getcwd() + "/**/lambda_function.py", recursive=True)
-    makePyModules(py_fileList, stage)
-    makeJSModules(js_fileList, stage)
+    makePyModules(py_fileList)
+    makeJSModules(js_fileList)
    
     
 
 
 @click.command()
 @click.option('--nocli', '-n', is_flag=True)
-@click.option('--options', '-o', nargs=3, type=str)
+@click.option('--options', '-o', nargs=2, type=str)
 @click.option('--buildspec', '-b', is_flag=True)
 @click.option('--add', '-a', is_flag=True)
 def main(nocli, options, buildspec, add):
@@ -444,8 +444,8 @@ def main(nocli, options, buildspec, add):
         bspecCLI()
 
     elif nocli == 1:
-        service, region, stage = options
-        skipCLI(service, region, stage)
+        service, region = options
+        skipCLI(service, region)
 
 if __name__ == "__main__":
     main()
