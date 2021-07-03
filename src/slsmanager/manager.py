@@ -281,7 +281,7 @@ def makeJSModules(js_fileList):
 
 
 def createSls(service, region):
-    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  lambdaHashingVersion: 20201221\n  region: {region}\npackage:\n  individually: true\nplugins:\n  - serverless-aws-alias\n\nfunctions:\n'
+    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  lambdaHashingVersion: 20201221\n  region: {region}\npackage:\n  individually: true\n\nfunctions:\n'
     with open('serverless.yml', 'w') as fSls:
         fSls.write(sls)
     print(f"{Fore.GREEN}Serverless.yml created{Style.RESET_ALL}")
