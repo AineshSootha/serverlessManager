@@ -426,7 +426,7 @@ def skipCLI(service, region, files):
 @click.option('--options', '-o', nargs=2, type=str)
 @click.option('--buildspec', '-b', is_flag=True)
 @click.option('--add', '-a', is_flag=True)
-@click.option('--files', '-f', is_flag==True)
+@click.option('--files', '-f', is_flag=True)
 def main(nocli, options, buildspec, add, files):
     print(f"{Fore.CYAN}========SLS Manager v{__VERSION__}========{Style.RESET_ALL}")
 
