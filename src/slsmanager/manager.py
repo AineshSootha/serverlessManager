@@ -12,7 +12,7 @@ import glob
 import os.path as path
 import importlib
 
-__VERSION__ = "0.1.12"
+__VERSION__ = "0.1.13"
 init() #colorama
 
 class credentials:
@@ -281,7 +281,7 @@ def makeJSModules(js_fileList):
 
 
 def createSls(service, region):
-    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  lambdaHashingVersion: 20201221\n  region: {region}\npackage:\n  individually: true\n\nfunctions:\n'
+    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  lambdaHashingVersion: 20201221\n  region: {region}\npackage:\n  individually: true\nplugins:\n  - serverless-aws-alias\n\nfunctions:\n'
     with open('serverless.yml', 'w') as fSls:
         fSls.write(sls)
     print(f"{Fore.GREEN}Serverless.yml created{Style.RESET_ALL}")
@@ -296,7 +296,7 @@ def addTosls(fname, module, funName, runtime):
                 break
             j += 1
         j += 1
-        dataLines.insert(j, f'  {funName}:\n    runtime: {runtime}\n    handler: {module}\n    package:\n      patterns:\n        - \'{fname}\'\n    events:\n      - http:\n          path: /{funName}\n          method: get\n')
+        dataLines.insert(j, f'  {funName}:\n    runtime: {runtime}\n    handler: {module}\n    package:\n      patterns:\n        - \'!./**\'\n        - \'{fname}\'\n    events:\n      - http:\n          path: /{funName}\n          method: get\n')
         
     with open('serverless.yml', 'w') as fSls:    
         dataFinal = "".join(dataLines) 
@@ -407,10 +407,14 @@ def cbCLI(creds):
 
 
 
-def skipCLI(service, region):
+def skipCLI(service, region, files):
     createSls(service, region)
-    js_fileList = glob.glob(os.getcwd() + "/**/index.js", recursive=True)
-    py_fileList = glob.glob(os.getcwd() + "/**/lambda_function.py", recursive=True)
+    if files == 1:
+        js_fileList = glob.glob(os.getcwd() + "/**/*.js", recursive=True)
+        py_fileList = glob.glob(os.getcwd() + "/**/*.py", recursive=True)
+    else:
+        js_fileList = glob.glob(os.getcwd() + "/**/index.js", recursive=True)
+        py_fileList = glob.glob(os.getcwd() + "/**/lambda_function.py", recursive=True)
     makePyModules(py_fileList)
     makeJSModules(js_fileList)
    
@@ -422,7 +426,8 @@ def skipCLI(service, region):
 @click.option('--options', '-o', nargs=2, type=str)
 @click.option('--buildspec', '-b', is_flag=True)
 @click.option('--add', '-a', is_flag=True)
-def main(nocli, options, buildspec, add):
+@click.option('--files', '-f', is_flag==True)
+def main(nocli, options, buildspec, add, files):
     print(f"{Fore.CYAN}========SLS Manager v{__VERSION__}========{Style.RESET_ALL}")
 
     if(add != 1 and buildspec != 1 and nocli != 1):
@@ -445,7 +450,7 @@ def main(nocli, options, buildspec, add):
 
     elif nocli == 1:
         service, region = options
-        skipCLI(service, region)
+        skipCLI(service, region, files)
 
 if __name__ == "__main__":
     main()
