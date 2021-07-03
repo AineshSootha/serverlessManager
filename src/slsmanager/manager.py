@@ -12,7 +12,7 @@ import glob
 import os.path as path
 import importlib
 
-__VERSION__ = "0.1.14"
+__VERSION__ = "0.1.15"
 init() #colorama
 
 class credentials:
