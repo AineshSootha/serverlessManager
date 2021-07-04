@@ -101,6 +101,6 @@ A basic Python Tool that simplifies the deployment of multiple AWS Lambda functi
 - This allows you to deploy the functions directly from codeCommit without needing to create a ***serverless.yml***. Follow the steps above.
 
 ### Options
-`slsmanager -n -o "service" "region" "stage"`
+`slsmanager -n -o "service" "region"`
 
 - Options required for the noCLI method.
