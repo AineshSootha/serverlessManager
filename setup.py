@@ -30,7 +30,8 @@ setuptools.setup(
         'colorama',
         'boto3',
         'progress',
-        'glob2'
+        'glob2',
+        'yaml'
     ],
     entry_points = {
         'console_scripts': ['slsmanager = slsmanager.manager:main']
