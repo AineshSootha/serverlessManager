@@ -1,5 +1,5 @@
 import setuptools
-__VERSION__ = "0.1.17"
+__VERSION__ = "0.1.18"
 
 with open("README.md", "r", encoding="utf8") as fh:
     long_description = fh.read()
@@ -30,7 +30,8 @@ setuptools.setup(
         'colorama',
         'boto3',
         'progress',
-        'glob2'
+        'glob2',
+        'pyyaml'
     ],
     entry_points = {
         'console_scripts': ['slsmanager = slsmanager.manager:main']
