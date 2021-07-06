@@ -13,7 +13,7 @@ import os.path as path
 #import importlib
 import yaml
 
-__VERSION__ = "0.1.15"
+__VERSION__ = "0.1.16"
 init() #colorama
 
 class credentials:
