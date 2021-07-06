@@ -1,17 +1,15 @@
-service: service
+service: BestX
 
 frameworkVersion: '2'
 
 provider:
   name: aws
   lambdaHashingVersion: 20201221
-  region: useast
+  region: us-east-2
+  stage: lambda
 
 package:
   individually: true
-
-plugins:
-  - serverless-aws-alias
 
 functions:
   testing:
@@ -25,16 +23,16 @@ functions:
       - http:
           path: /testing
           method: get
-  dev:
-    runtime: python3.7
-    handler: dev/lambda_function.lambda_handler
+  ui:
+    runtime: nodejs12.x
+    handler: ui/index.handler
     package:
       patterns:
         - '!./**'
-        - 'dev/lambda_function.py'
+        - 'ui/index.js'
     events:
       - http:
-          path: /dev
+          path: /ui
           method: get
   backend:
     runtime: python3.7
@@ -46,4 +44,15 @@ functions:
     events:
       - http:
           path: /backend
+          method: get
+  deploy:
+    runtime: python3.7
+    handler: deploy/lambda_function.lambda_handler
+    package:
+      patterns:
+        - '!./**'
+        - 'deploy/lambda_function.py'
+    events:
+      - http:
+          path: /deploy
           method: get

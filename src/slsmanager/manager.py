@@ -10,7 +10,8 @@ from progress.bar import Bar
 import os
 import glob
 import os.path as path
-import importlib
+#import importlib
+import yaml
 
 __VERSION__ = "0.1.15"
 init() #colorama
@@ -259,7 +260,40 @@ def createCB(projName, creds):
         }
     )
 
+
+def addDevAlias(fun, creds):
+    lambda_client = boto3.client('lambda', 
+                            region_name=creds.AWS_DEFAULT_REGION, 
+                            aws_access_key_id=creds.AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=creds.AWS_SECRET_ACCESS_KEY
+                            )
+    try:
+        alias_response = lambda_client.get_alias(
+                            FunctionName=fun,
+                            Name='dev'
+                        )
+    except:
+        create_response = lambda_client.create_alias(
+                            FunctionName=fun,
+                            Name='dev',
+                            FunctionVersion='$LATEST'
+                        )
+        return create_response
+    return alias_response
+    
 '''Serverless Framework Stuff'''
+
+def createAliases(creds):
+    slsYML = yaml.load(open("serverless.yml"), yaml.SafeLoader)
+    slsService = slsYML['service']
+    slsFunctions = slsYML['functions']
+    slsStage = slsYML['provider']['stage']
+    for fun in slsFunctions.keys():
+        funName = slsService + '-' + slsStage + '-' + fun
+        response = addDevAlias(funName,creds)
+        if not response:
+            print(f"{fun} alias FAIL")
+       
 
 def makePyModules(py_fileList):
     for pyFile in py_fileList:
@@ -280,8 +314,8 @@ def makeJSModules(js_fileList):
         addTosls(relPath, module, funName, "nodejs12.x")
 
 
-def createSls(service, region):
-    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  lambdaHashingVersion: 20201221\n  region: {region}\npackage:\n  individually: true\n\nfunctions:\n'
+def createSls(service, region, stage = "dev"):
+    sls = f'service: {service}\n\nframeworkVersion: \'2\'\n\nprovider:\n  name: aws\n  lambdaHashingVersion: 20201221\n  region: {region}\n  stage: {stage}\n\npackage:\n  individually: true\n\nfunctions:\n'
     with open('serverless.yml', 'w') as fSls:
         fSls.write(sls)
     print(f"{Fore.GREEN}Serverless.yml created{Style.RESET_ALL}")
@@ -406,9 +440,8 @@ def cbCLI(creds):
     return creds
 
 
-
-def skipCLI(service, region, files):
-    createSls(service, region)
+def skipCLI(service, region, stage, files=0):
+    createSls(service, region, stage)
     if files == 1:
         js_fileList = glob.glob(os.getcwd() + "/**/*.js", recursive=True)
         py_fileList = glob.glob(os.getcwd() + "/**/*.py", recursive=True)
@@ -423,14 +456,14 @@ def skipCLI(service, region, files):
 
 @click.command()
 @click.option('--nocli', '-n', is_flag=True)
-@click.option('--options', '-o', nargs=2, type=str)
+@click.option('--options', '-o', nargs=3, type=str)
 @click.option('--buildspec', '-b', is_flag=True)
 @click.option('--add', '-a', is_flag=True)
 @click.option('--files', '-f', is_flag=True)
-def main(nocli, options, buildspec, add, files):
+@click.option('--alias', '-l', nargs=3, type=str)
+def main(nocli, options, buildspec, add, files, alias):
     print(f"{Fore.CYAN}========SLS Manager v{__VERSION__}========{Style.RESET_ALL}")
-
-    if(add != 1 and buildspec != 1 and nocli != 1):
+    if(add != 1 and buildspec != 1 and nocli != 1 and not alias):
         creds = None
         ccInput = input("Would you like to create a new CodeCommit Repo? (Y/N): ")
         if ccInput.lower() == 'y':
@@ -449,8 +482,16 @@ def main(nocli, options, buildspec, add, files):
         bspecCLI()
 
     elif nocli == 1:
-        service, region = options
-        skipCLI(service, region, files)
+        if not options:
+            print("You need to use -o/--options flag with --nocli!")
+            return
+        service, region, stage = options
+        skipCLI(service, region, stage, files)
+    elif alias:
+        creds = credentials(alias[0],alias[1], alias[2])
+        createAliases(creds)
+        
+        
 
 if __name__ == "__main__":
     main()
