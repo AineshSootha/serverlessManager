@@ -5,3 +5,5 @@ ui
 testing
 dev
 backend
+deploy
+serverless.yml

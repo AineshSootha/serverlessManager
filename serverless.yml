@@ -1,49 +1,25 @@
-service: service
+service: serviceName
 
 frameworkVersion: '2'
 
 provider:
   name: aws
   lambdaHashingVersion: 20201221
-  region: useast
+  region: us-east-2
+  stage: lambda
 
 package:
   individually: true
 
-plugins:
-  - serverless-aws-alias
-
 functions:
-  testing:
+  tempFun:
     runtime: nodejs12.x
-    handler: testing/index.handler
+    handler: tempFun/index.handler
     package:
       patterns:
         - '!./**'
-        - 'testing/index.js'
+        - 'tempFun/index.js'
     events:
       - http:
-          path: /testing
-          method: get
-  dev:
-    runtime: python3.7
-    handler: dev/lambda_function.lambda_handler
-    package:
-      patterns:
-        - '!./**'
-        - 'dev/lambda_function.py'
-    events:
-      - http:
-          path: /dev
-          method: get
-  backend:
-    runtime: python3.7
-    handler: backend/lambda_function.lambda_handler
-    package:
-      patterns:
-        - '!./**'
-        - 'backend/lambda_function.py'
-    events:
-      - http:
-          path: /backend
+          path: /tempFun
           method: get
