@@ -138,4 +138,4 @@ This project uses a combination of [Serverless](https://www.serverless.com/) and
 `slsmanager -l "ACCESS-KEY-ID" "SECRET-ACCESS-KEY" "region"`
 
 - Creates a ***dev*** alias for all functions in the ***serverless.yml*** file.
-- This is also run when you use the provided template ***buildspec.yml***
+- This runs when you use the provided template ***buildspec.yml***
