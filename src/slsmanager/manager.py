@@ -330,7 +330,7 @@ def addTosls(fname, module, funName, runtime):
                 break
             j += 1
         j += 1
-        dataLines.insert(j, f'  {funName}:\n    runtime: {runtime}\n    handler: {module}\n    package:\n      patterns:\n        - \'!./**\'\n        - \'{fname}\'\n    events:\n      - http:\n          path: /{funName}\n          method: get\n')
+        dataLines.insert(j, f'  {funName}:\n    runtime: {runtime}\n    handler: {module}\n    package:\n      patterns:\n        - \'!./**\'\n        - \'{fname}\'')
         
     with open('serverless.yml', 'w') as fSls:    
         dataFinal = "".join(dataLines) 
