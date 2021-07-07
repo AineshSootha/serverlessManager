@@ -1,3 +1,4 @@
+
 # Serverless Manager
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/AineshSootha/serverlessManager/commits)
 [![PyPI version shields.io](https://img.shields.io/pypi/v/slsmanager)](https://pypi.org/project/slsmanager/)
@@ -13,8 +14,8 @@ This project uses a combination of [Serverless](https://www.serverless.com/) and
 ## Set Up
 
  - Set up an IAM user on your AWS console 
-	 - You require the following permissions:
-	  ![Permissions for IAM user](/assets/permissions.png)
+	 - You can find the required permissions here: [assets/IAMpolicy](assets/IAMPolicy.json)
+	 - These policies are only for reference and should be edited as required (to decrease access)
 	 - Store the Access Key ID and the Secret Access Key
 	 - Generate the git credentials for the user. (Security Credentials -> HTTPS Git Credentials)
 
