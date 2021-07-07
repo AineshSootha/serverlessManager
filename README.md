@@ -14,7 +14,7 @@ This project uses a combination of [Serverless](https://www.serverless.com/) and
 ## Set Up
 
  - Set up an IAM user on your AWS console 
-	 - You can find the required permissions here: [assets/IAMpolicy](assets/IAMPolicy.json)
+	 - You can find the required permissions here: [assets/IAMpolicy](assets/iamPolicy.json)
 	 - These policies are only for reference and should be edited as required (to limit access **especially** with IAM permissions)
 	 - Store the Access Key ID and the Secret Access Key
 	 - Generate the git credentials for the user. (Security Credentials -> HTTPS Git Credentials)
