@@ -11,7 +11,7 @@ phases:
   build:
     commands:
       - echo Build Deploy
-      - sls deploy -v --alias dev
+      - sls deploy
   post_build:
     commands:
       - slsmanager -l $AWS_ACCESS_KEY_ID $AWS_SECRET_ACCESS_KEY $AWS_DEFAULT_REGION
