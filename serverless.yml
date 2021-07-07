@@ -1,4 +1,4 @@
-service: serviceName
+service: BestX
 
 frameworkVersion: '2'
 
@@ -12,14 +12,31 @@ package:
   individually: true
 
 functions:
-  tempFun:
+  testing:
     runtime: nodejs12.x
-    handler: tempFun/index.handler
+    handler: testing/index.handler
     package:
       patterns:
         - '!./**'
-        - 'tempFun/index.js'
-    events:
-      - http:
-          path: /tempFun
-          method: get
+        - 'testing/index.js'
+  ui:
+    runtime: nodejs12.x
+    handler: ui/index.handler
+    package:
+      patterns:
+        - '!./**'
+        - 'ui/index.js'
+  backend:
+    runtime: python3.7
+    handler: backend/lambda_function.lambda_handler
+    package:
+      patterns:
+        - '!./**'
+        - 'backend/lambda_function.py'
+  deploy:
+    runtime: python3.7
+    handler: deploy/lambda_function.lambda_handler
+    package:
+      patterns:
+        - '!./**'
+        - 'deploy/lambda_function.py'
