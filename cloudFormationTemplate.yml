@@ -1,15 +1,16 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Continuous Integration for project
-
 Parameters:
   ProjectName:
     Type: String
-    Description: The name of the project being built.  This name will be used on a number of resources.
+    Description: >-
+      The name of the project being built.  This name will be used on a number
+      of resources.
     Default: BestXLambdaCB
   ProjectParameterOverrides:
     Type: String
     Description: JSON string for the parameters of the project template.
-    Default: "{}"
+    Default: '{}'
   CodeCommitRepoURL:
     Type: String
     Description: URL to CodeCommitRepo
@@ -24,48 +25,44 @@ Parameters:
     Default: master
   PipelineName:
     Type: String
-    Description: The name of the pipeline being built.  This name will be used on a number of resources.
+    Description: >-
+      The name of the pipeline being built.  This name will be used on a number
+      of resources.
     Default: BestXLambdaPipeline
   ComputeType:
     Type: String
     Default: BUILD_GENERAL1_SMALL
-  AWS_ACCESS_KEY_ID:
+  AWSAccessKeyId:
     Type: String
-    Default: 
-  AWS_SECRET_ACCESS_KEY:
+    Default: Access Key ID
+  AWSSecretAccessKey:
     Type: String
-    Default:
-  AWS_DEFAULT_REGION:
+    Default: Secret Access Key
+  AWSDefaultRegion:
     Type: String
     Default: us-east-2
-
-
-
 Resources:
-  # S3 bucket where build artifacts go
   DeploymentArtifactBucket:
-    Type: AWS::S3::Bucket
+    Type: 'AWS::S3::Bucket'
     DeletionPolicy: Delete
     Properties:
       AccessControl: Private
       VersioningConfiguration:
-        # The guide recommends Enabled but I can't see why
         Status: Suspended
-
   CodeBuildServiceRole:
-    Type: AWS::IAM::Role
+    Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
             Action:
-              - sts:AssumeRole
+              - 'sts:AssumeRole'
             Principal:
               Service:
                 - codebuild.amazonaws.com
   CodeBuildServicePolicy:
-    Type: AWS::IAM::Policy
+    Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: CodeBuildServicePolicy
       Roles:
@@ -75,20 +72,20 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - logs:CreateLogGroup
-              - logs:CreateLogStream
-              - logs:PutLogEvents
-            Resource: "arn:aws:logs:*:*:*"
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Resource: 'arn:aws:logs:*:*:*'
           - Effect: Allow
             Action:
-              - s3:GetObject
-              - s3:GetObjectVersion
-              - s3:PutObject
+              - 's3:GetObject'
+              - 's3:GetObjectVersion'
+              - 's3:PutObject'
             Resource:
-              - !Sub "arn:aws:s3:::codepipeline-${AWS::Region}-*/*"
-              - !Sub "arn:aws:s3:::${DeploymentArtifactBucket}/*"
+              - !Sub 'arn:aws:s3:::codepipeline-${AWS::Region}-*/*'
+              - !Sub 'arn:aws:s3:::${DeploymentArtifactBucket}/*'
   CodeBuildProject:
-    Type: AWS::CodeBuild::Project
+    Type: 'AWS::CodeBuild::Project'
     Properties:
       Name: !Ref ProjectName
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
@@ -97,7 +94,7 @@ Resources:
       Environment:
         Type: linuxContainer
         ComputeType: !Ref ComputeType
-        Image: aws/codebuild/standard:5.0
+        Image: 'aws/codebuild/standard:5.0'
         EnvironmentVariables:
           - Name: BUILD_ARTIFACT_BUCKET
             Value: !Ref DeploymentArtifactBucket
@@ -106,30 +103,28 @@ Resources:
           - Name: ENV_NAME_st
             Value: lambda
           - Name: AWS_ACCESS_KEY_ID
-            Value: !Ref AWS_ACCESS_KEY_ID
+            Value: !Ref AWSAccessKeyId
           - Name: AWS_SECRET_ACCESS_KEY
-            Value: !Ref AWS_SECRET_ACCESS_KEY
+            Value: !Ref AWSSecretAccessKey
           - Name: AWS_DEFAULT_REGION
-            Value: !Ref AWS_DEFAULT_REGION
+            Value: !Ref AWSDefaultRegion
       Source:
         Type: CODEPIPELINE
       TimeoutInMinutes: 10
-
   CodePipelineServiceRole:
-    Type: AWS::IAM::Role
+    Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
             Action:
-              - sts:AssumeRole
+              - 'sts:AssumeRole'
             Principal:
               Service:
                 - codepipeline.amazonaws.com
   CodePipelineServicePolicy:
-    # This policy orchestrates CloudFormation and CodeBuild.
-    Type: AWS::IAM::Policy
+    Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: CodePipelineServicePolicy
       Roles:
@@ -139,59 +134,57 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - logs:CreateLogGroup
-              - logs:CreateLogStream
-              - logs:PutLogEvents
-            Resource: "arn:aws:logs:*:*:*"
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Resource: 'arn:aws:logs:*:*:*'
           - Effect: Allow
             Action:
-              - s3:GetObject
-              - s3:GetObjectVersion
-              - s3:PutObject
-            Resource: !Sub "arn:aws:s3:::${DeploymentArtifactBucket}/*"
+              - 's3:GetObject'
+              - 's3:GetObjectVersion'
+              - 's3:PutObject'
+            Resource: !Sub 'arn:aws:s3:::${DeploymentArtifactBucket}/*'
           - Effect: Allow
             Action:
-              - cloudformation:CreateStack
-              - cloudformation:DescribeStacks
-              - cloudformation:DeleteStack
-              - cloudformation:UpdateStack
-              - cloudformation:CreateChangeSet
-              - cloudformation:ExecuteChangeSet
-              - cloudformation:DeleteChangeSet
-              - cloudformation:DescribeChangeSet
-              - cloudformation:ValidateTemplate
-            Resource: !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ProjectName}/*"
+              - 'cloudformation:CreateStack'
+              - 'cloudformation:DescribeStacks'
+              - 'cloudformation:DeleteStack'
+              - 'cloudformation:UpdateStack'
+              - 'cloudformation:CreateChangeSet'
+              - 'cloudformation:ExecuteChangeSet'
+              - 'cloudformation:DeleteChangeSet'
+              - 'cloudformation:DescribeChangeSet'
+              - 'cloudformation:ValidateTemplate'
+            Resource: !Sub >-
+              arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ProjectName}/*
           - Effect: Allow
             Action:
-              - codebuild:BatchGetBuilds
-              - codebuild:StartBuild
-              - codebuild:StopBuild
+              - 'codebuild:BatchGetBuilds'
+              - 'codebuild:StartBuild'
+              - 'codebuild:StopBuild'
             Resource: !GetAtt CodeBuildProject.Arn
           - Effect: Allow
             Action:
-              - iam:PassRole
+              - 'iam:PassRole'
             Resource: !GetAtt CloudFormationServiceRole.Arn
           - Effect: Allow
             Action:
-              - codecommit:*
-            Resource: "arn:aws:codecommit:*"
-  
+              - 'codecommit:*'
+            Resource: 'arn:aws:codecommit:*'
   CloudFormationServiceRole:
-    Type: AWS::IAM::Role
+    Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
             Action:
-              - sts:AssumeRole
+              - 'sts:AssumeRole'
             Principal:
               Service:
                 - cloudformation.amazonaws.com
   CloudFormationServicePolicy:
-    # This policy deloys the project's SAM template and needs permissions to create all services defined there.
-    # A number of common blocks are provided as examples.
-    Type: AWS::IAM::Policy
+    Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: CloudFormationServicePolicy
       Roles:
@@ -201,64 +194,108 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - logs:CreateLogGroup
-              - logs:CreateLogStream
-              - logs:PutLogEvents
-            Resource: "arn:aws:logs:*:*:*"
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Resource: 'arn:aws:logs:*:*:*'
           - Effect: Allow
             Action:
-              - cloudformation:CreateChangeSet
-              - cloudformation:ListChangeSets
-            Resource: !Sub "arn:aws:cloudformation:${AWS::Region}:aws:transform/*"
+              - 'cloudformation:CreateChangeSet'
+              - 'cloudformation:ListChangeSets'
+            Resource: !Sub 'arn:aws:cloudformation:${AWS::Region}:aws:transform/*'
           - Effect: Allow
             Action:
-              - s3:GetObject
+              - 's3:GetObject'
             Resource:
-              - !Sub "arn:aws:s3:::codepipeline-${AWS::Region}-*/*"
-              - !Sub "arn:aws:s3:::${DeploymentArtifactBucket}/*"
+              - !Sub 'arn:aws:s3:::codepipeline-${AWS::Region}-*/*'
+              - !Sub 'arn:aws:s3:::${DeploymentArtifactBucket}/*'
           - Effect: Allow
             Action:
-              - iam:AttachRolePolicy
-              - iam:CreateRole
-              - iam:DeleteRole
-              - iam:DeleteRolePolicy
-              - iam:DetachRolePolicy
-              - iam:GetRole
-              - iam:PassRole
-              - iam:PutRolePolicy
-            Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/${ProjectName}-*"
+              - 'iam:AttachRolePolicy'
+              - 'iam:CreateRole'
+              - 'iam:DeleteRole'
+              - 'iam:DeleteRolePolicy'
+              - 'iam:DetachRolePolicy'
+              - 'iam:GetRole'
+              - 'iam:PassRole'
+              - 'iam:PutRolePolicy'
+            Resource: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${ProjectName}-*'
           - Effect: Allow
             Action:
-              - lambda:AddPermission
-              - lambda:CreateFunction
-              - lambda:DeleteFunction
-              - lambda:GetFunction
-              - lambda:GetFunctionConfiguration
-              - lambda:InvokeFunction
-              - lambda:RemovePermission
-              - lambda:TagResource
-              - lambda:UntagResource
-              - lambda:UpdateFunctionCode
-              - lambda:UpdateFunctionConfiguration
-            Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ProjectName}-*"
-          # This block is necessary for any event mapping
+              - 'lambda:AddPermission'
+              - 'lambda:CreateFunction'
+              - 'lambda:DeleteFunction'
+              - 'lambda:GetFunction'
+              - 'lambda:GetFunctionConfiguration'
+              - 'lambda:InvokeFunction'
+              - 'lambda:RemovePermission'
+              - 'lambda:TagResource'
+              - 'lambda:UntagResource'
+              - 'lambda:UpdateFunctionCode'
+              - 'lambda:UpdateFunctionConfiguration'
+            Resource: !Sub >-
+              arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ProjectName}-*
           - Effect: Allow
             Action:
-              - lambda:CreateEventSourceMapping
-              - lambda:DeleteEventSourceMapping
-              - lambda:GetEventSourceMapping
-            Resource: "*"
-          # Lambda tagging
+              - 'lambda:CreateEventSourceMapping'
+              - 'lambda:DeleteEventSourceMapping'
+              - 'lambda:GetEventSourceMapping'
+            Resource: '*'
           - Effect: Allow
             Action:
-              - lambda:ListTags
-              - lambda:TagResource
-              - lambda:UntagResource
-            Resource: "*"
-          # API Gateway (REST events)
-
+              - 'lambda:ListTags'
+              - 'lambda:TagResource'
+              - 'lambda:UntagResource'
+            Resource: '*'
+  CloudWatchEventRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        -
+          PolicyName: cwe-pipeline-execution
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              -
+                Effect: Allow
+                Action: codepipeline:StartPipelineExecution
+                Resource: !Join [ '', [ 'arn:aws:codepipeline:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref CodePipeline ] ]
+  CloudWatchEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        source:
+          - aws.codecommit
+        detail-type:
+          - 'CodeCommit Repository State Change'
+        resources:
+          - !Join [ '', [ 'arn:aws:codecommit:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref CodeCommitRepoName ] ]
+        detail:
+          event:
+            - referenceCreated
+            - referenceUpdated
+          referenceType:
+            - branch
+          referenceName:
+            - !Ref CodeCommitBranch
+      Targets:
+        -
+          Arn: 
+            !Join [ '', [ 'arn:aws:codepipeline:', !Ref 'AWS::Region', ':', !Ref 'AWS::AccountId', ':', !Ref CodePipeline ] ]
+          RoleArn: !GetAtt CloudWatchEventRole.Arn
+          Id: codepipeline-AppPipeline
   CodePipeline:
-    Type: AWS::CodePipeline::Pipeline
+    Type: 'AWS::CodePipeline::Pipeline'
     Properties:
       RoleArn: !GetAtt CodePipelineServiceRole.Arn
       Stages:
