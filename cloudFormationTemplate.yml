@@ -1,0 +1,284 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Continuous Integration for project
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: The name of the project being built.  This name will be used on a number of resources.
+    Default: BestXLambdaCB
+  ProjectParameterOverrides:
+    Type: String
+    Description: JSON string for the parameters of the project template.
+    Default: "{}"
+  CodeCommitRepoURL:
+    Type: String
+    Description: URL to CodeCommitRepo
+    Default: repoURL
+  CodeCommitRepoName:
+    Type: String
+    Description: Name of CodeCommitRepo
+    Default: repoName
+  CodeCommitBranch:
+    Type: String
+    Description: Name of CodeCommit Branch
+    Default: master
+  PipelineName:
+    Type: String
+    Description: The name of the pipeline being built.  This name will be used on a number of resources.
+    Default: BestXLambdaPipeline
+  ComputeType:
+    Type: String
+    Default: BUILD_GENERAL1_SMALL
+
+
+
+Resources:
+  # S3 bucket where build artifacts go
+  DeploymentArtifactBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      AccessControl: Private
+      VersioningConfiguration:
+        # The guide recommends Enabled but I can't see why
+        Status: Suspended
+
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+  CodeBuildServicePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: CodeBuildServicePolicy
+      Roles:
+        - !Ref CodeBuildServiceRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: "arn:aws:logs:*:*:*"
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:GetObjectVersion
+              - s3:PutObject
+            Resource:
+              - !Sub "arn:aws:s3:::codepipeline-${AWS::Region}-*/*"
+              - !Sub "arn:aws:s3:::${DeploymentArtifactBucket}/*"
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Ref ProjectName
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: linuxContainer
+        ComputeType: !Ref ComputeType
+        Image: aws/codebuild/standard:5.0
+        EnvironmentVariables:
+          - Name: BUILD_ARTIFACT_BUCKET
+            Value: !Ref DeploymentArtifactBucket
+          - Name: SERVICE_NAME
+            Value: BestX
+          - Name: ENV_NAME_st
+            Value: lambda
+      Source:
+        Type: CODEPIPELINE
+      TimeoutInMinutes: 10
+
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+  CodePipelineServicePolicy:
+    # This policy orchestrates CloudFormation and CodeBuild.
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: CodePipelineServicePolicy
+      Roles:
+        - !Ref CodePipelineServiceRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: "arn:aws:logs:*:*:*"
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:GetObjectVersion
+              - s3:PutObject
+            Resource: !Sub "arn:aws:s3:::${DeploymentArtifactBucket}/*"
+          - Effect: Allow
+            Action:
+              - cloudformation:CreateStack
+              - cloudformation:DescribeStacks
+              - cloudformation:DeleteStack
+              - cloudformation:UpdateStack
+              - cloudformation:CreateChangeSet
+              - cloudformation:ExecuteChangeSet
+              - cloudformation:DeleteChangeSet
+              - cloudformation:DescribeChangeSet
+              - cloudformation:ValidateTemplate
+            Resource: !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ProjectName}/*"
+          - Effect: Allow
+            Action:
+              - codebuild:BatchGetBuilds
+              - codebuild:StartBuild
+              - codebuild:StopBuild
+            Resource: !GetAtt CodeBuildProject.Arn
+          - Effect: Allow
+            Action:
+              - iam:PassRole
+            Resource: !GetAtt CloudFormationServiceRole.Arn
+          - Effect: Allow
+            Action:
+              - codecommit:*
+            Resource: "arn:aws:codecommit:*"
+  
+  CloudFormationServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - cloudformation.amazonaws.com
+  CloudFormationServicePolicy:
+    # This policy deloys the project's SAM template and needs permissions to create all services defined there.
+    # A number of common blocks are provided as examples.
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: CloudFormationServicePolicy
+      Roles:
+        - !Ref CloudFormationServiceRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: "arn:aws:logs:*:*:*"
+          - Effect: Allow
+            Action:
+              - cloudformation:CreateChangeSet
+              - cloudformation:ListChangeSets
+            Resource: !Sub "arn:aws:cloudformation:${AWS::Region}:aws:transform/*"
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+            Resource:
+              - !Sub "arn:aws:s3:::codepipeline-${AWS::Region}-*/*"
+              - !Sub "arn:aws:s3:::${DeploymentArtifactBucket}/*"
+          - Effect: Allow
+            Action:
+              - iam:AttachRolePolicy
+              - iam:CreateRole
+              - iam:DeleteRole
+              - iam:DeleteRolePolicy
+              - iam:DetachRolePolicy
+              - iam:GetRole
+              - iam:PassRole
+              - iam:PutRolePolicy
+            Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/${ProjectName}-*"
+          - Effect: Allow
+            Action:
+              - lambda:AddPermission
+              - lambda:CreateFunction
+              - lambda:DeleteFunction
+              - lambda:GetFunction
+              - lambda:GetFunctionConfiguration
+              - lambda:InvokeFunction
+              - lambda:RemovePermission
+              - lambda:TagResource
+              - lambda:UntagResource
+              - lambda:UpdateFunctionCode
+              - lambda:UpdateFunctionConfiguration
+            Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ProjectName}-*"
+          # This block is necessary for any event mapping
+          - Effect: Allow
+            Action:
+              - lambda:CreateEventSourceMapping
+              - lambda:DeleteEventSourceMapping
+              - lambda:GetEventSourceMapping
+            Resource: "*"
+          # Lambda tagging
+          - Effect: Allow
+            Action:
+              - lambda:ListTags
+              - lambda:TagResource
+              - lambda:UntagResource
+            Resource: "*"
+          # API Gateway (REST events)
+
+  CodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RoleArn: !GetAtt CodePipelineServiceRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: 1
+                Provider: CodeCommit
+              OutputArtifacts:
+                - Name: SourceCodeOutputArtifact
+              Configuration:
+                RepositoryName: !Ref CodeCommitRepoName
+                BranchName: !Ref CodeCommitBranch
+                OutputArtifactFormat: CODE_ZIP
+                PollForSourceChanges: false
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: CodeBuild
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              InputArtifacts:
+                - Name: SourceCodeOutputArtifact
+              OutputArtifacts:
+                - Name: BuildOutputArtifact
+              Configuration:
+                ProjectName: !Ref ProjectName
+              RunOrder: 1
+      ArtifactStore:
+        Type: S3
+        Location: !Ref DeploymentArtifactBucket
+      Name: !Ref PipelineName
