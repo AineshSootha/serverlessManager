@@ -29,6 +29,15 @@ Parameters:
   ComputeType:
     Type: String
     Default: BUILD_GENERAL1_SMALL
+  AWS_ACCESS_KEY_ID:
+    Type: String
+    Default: 
+  AWS_SECRET_ACCESS_KEY:
+    Type: String
+    Default:
+  AWS_DEFAULT_REGION:
+    Type: String
+    Default: us-east-2
 
 
 
@@ -96,6 +105,12 @@ Resources:
             Value: BestX
           - Name: ENV_NAME_st
             Value: lambda
+          - Name: AWS_ACCESS_KEY_ID
+            Value: !Ref AWS_ACCESS_KEY_ID
+          - Name: AWS_SECRET_ACCESS_KEY
+            Value: !Ref AWS_SECRET_ACCESS_KEY
+          - Name: AWS_DEFAULT_REGION
+            Value: !Ref AWS_DEFAULT_REGION
       Source:
         Type: CODEPIPELINE
       TimeoutInMinutes: 10
