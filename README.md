@@ -15,7 +15,7 @@ This project uses a combination of [Serverless](https://www.serverless.com/) and
 
  - Set up an IAM user on your AWS console 
 	 - You can find the required permissions here: [assets/IAMpolicy](assets/iamPolicy.json)
-	 - These policies are only for reference and should be edited as required (to decrease access)
+	 - These policies are only for reference and should be edited as required (to limit access **especially** with IAM permissions)
 	 - Store the Access Key ID and the Secret Access Key
 	 - Generate the git credentials for the user. (Security Credentials -> HTTPS Git Credentials)
 
@@ -63,7 +63,7 @@ This project uses a combination of [Serverless](https://www.serverless.com/) and
  - It will then call `sls deploy` which will deploy your lambda functions
  - Serverless Manager will also create an alias **dev** for each function and point it to **$LATEST**. You can use this alias and add other aliases to stage development.
  - Read more about aliases [here](https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html)
-
+----
 ## On your Local Computer (Incomplete):
 - If you wish to use slsmanager from your local computer to create projects/repositories:
  - Open a terminal window and navigate to the directory with the handler file. 
@@ -109,7 +109,7 @@ This project uses a combination of [Serverless](https://www.serverless.com/) and
 	 - Once you have completed all your steps, you will see 2 new files ***serverless.yml*** (Which lists all the properties required to deploy using the Serverless Framework and ***buildspec.yml*** (Which instructs CodeBuild to deploy the function(s) using the given files and properties.
 
 
-
+----
  ## Options
 - There are a few config options you can use while running **slsmanager**
 ### Add / Create
@@ -139,3 +139,4 @@ This project uses a combination of [Serverless](https://www.serverless.com/) and
 
 - Creates a ***dev*** alias for all functions in the ***serverless.yml*** file.
 - This is also run when you use the provided template ***buildspec.yml***
+----
