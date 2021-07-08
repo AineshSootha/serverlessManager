@@ -1,12 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Continuous Integration for project
+Description: CloudFormation Template for serverless/slsmanager
 Parameters:
   ProjectName:
     Type: String
-    Description: >-
-      The name of the project being built.  This name will be used on a number
-      of resources.
-    Default: BestXLambdaCB
+    Description: Name of CodeBuild Project
+    Default: CodeBuildProj
   ProjectParameterOverrides:
     Type: String
     Description: JSON string for the parameters of the project template.
@@ -28,7 +26,7 @@ Parameters:
     Description: >-
       The name of the pipeline being built.  This name will be used on a number
       of resources.
-    Default: BestXLambdaPipeline
+    Default: CodePipelineSLS
   ComputeType:
     Type: String
     Default: BUILD_GENERAL1_SMALL
