@@ -282,6 +282,20 @@ def addDevAlias(fun, creds):
     return alias_response
     
 '''Serverless Framework Stuff'''
+def updateStack(creds):
+    slsYML = yaml.load(open("serverless.yml"), yaml.SafeLoader)
+    slsFunctions = slsYML['functions']
+    with open("serverless.yml", "a") as fSls:
+        fSls.write('\n\nresources:\n  extensions:\n')
+        for fun in slsFunctions.keys():
+            funName = fun[0].upper() + fun[1:] + "LambdaFunction"
+            funName = funName.replace('-','Dash')
+            funName = funName.replace('_','Underscore')
+            slsLine = f"    {funName}:\n      DeletionPolicy: Retain}"
+            fSls.write(slsLine)
+
+        
+
 
 def deleteAlias(creds, funName):
     lambda_client = boto3.client('lambda', 
@@ -299,7 +313,6 @@ def deleteAlias(creds, funName):
     )
     if not del_Response:
         exit(1)
-
 
 
 def createAliases(creds):
@@ -481,7 +494,8 @@ def skipCLI(service, region, stage, files=0):
 @click.option('--files', '-f', is_flag=True)
 @click.option('--alias', '-l', nargs=3, type=str)
 @click.option('--delete', '-d', nargs=1, type=str)
-def main(nocli, options, buildspec, add, files, alias, delete):
+@click.option('--updatestack', '-u', nargs=3, type=str)
+def main(nocli, options, buildspec, add, files, alias, delete, updatestack):
     print(f"{Fore.CYAN}========SLS Manager v{__VERSION__}========{Style.RESET_ALL}")
     if(add != 1 and buildspec != 1 and nocli != 1 and not alias):
         creds = None
@@ -513,7 +527,9 @@ def main(nocli, options, buildspec, add, files, alias, delete):
             deleteAlias(creds, delete[0])
         else:
             createAliases(creds)
-        
+    elif updatestack:
+        creds = credentials(updatestack[0],updatestack[1], updatestack[2])
+        updateStack(creds)
         
 
 if __name__ == "__main__":
