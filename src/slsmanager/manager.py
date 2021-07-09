@@ -13,7 +13,7 @@ import os.path as path
 #import importlib
 import yaml
 
-__VERSION__ = "0.1.23"
+__VERSION__ = "0.1.24"
 init() #colorama
 
 class credentials:
@@ -282,7 +282,7 @@ def addDevAlias(fun, creds):
     return alias_response
     
 '''Serverless Framework Stuff'''
-def updateStack(creds):
+def updateStack():
     slsYML = yaml.load(open("serverless.yml"), yaml.SafeLoader)
     slsFunctions = slsYML['functions']
     with open("serverless.yml", "a") as fSls:
@@ -494,10 +494,10 @@ def skipCLI(service, region, stage, files=0):
 @click.option('--files', '-f', is_flag=True)
 @click.option('--alias', '-l', nargs=3, type=str)
 @click.option('--delete', '-d', nargs=1, type=str)
-@click.option('--updatestack', '-u', nargs=3, type=str)
+@click.option('--updatestack', '-u', is_flag=True)
 def main(nocli, options, buildspec, add, files, alias, delete, updatestack):
     print(f"{Fore.CYAN}========SLS Manager v{__VERSION__}========{Style.RESET_ALL}")
-    if(add != 1 and buildspec != 1 and nocli != 1 and not alias):
+    if(add != 1 and buildspec != 1 and nocli != 1 and not alias and updatestack != 1):
         creds = None
         ccInput = input("Would you like to create a new CodeCommit Repo? (Y/N): ")
         if ccInput.lower() == 'y':
@@ -527,9 +527,8 @@ def main(nocli, options, buildspec, add, files, alias, delete, updatestack):
             deleteAlias(creds, delete[0])
         else:
             createAliases(creds)
-    elif updatestack:
-        creds = credentials(updatestack[0],updatestack[1], updatestack[2])
-        updateStack(creds)
+    elif updatestack == 1:
+        updateStack()
         
 
 if __name__ == "__main__":
