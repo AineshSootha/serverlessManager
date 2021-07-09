@@ -13,7 +13,7 @@ import os.path as path
 #import importlib
 import yaml
 
-__VERSION__ = "1.0.0"
+__VERSION__ = "0.1.21"
 init() #colorama
 
 class credentials:
@@ -283,6 +283,25 @@ def addDevAlias(fun, creds):
     
 '''Serverless Framework Stuff'''
 
+def deleteAlias(creds, funName):
+    lambda_client = boto3.client('lambda', 
+                            region_name=creds.AWS_DEFAULT_REGION, 
+                            aws_access_key_id=creds.AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=creds.AWS_SECRET_ACCESS_KEY
+                            )
+    slsYML = yaml.load(open("serverless.yml"), yaml.SafeLoader)
+    slsService = slsYML['service']
+    slsStage = slsYML['provider']['stage']
+    finfunName = slsService + '-' + slsStage + '-' + funName
+    del_Response = lambda_client.delete_alias(
+        FunctionName=finfunName,
+        Name='dev'
+    )
+    if not del_Response:
+        exit(1)
+
+
+
 def createAliases(creds):
     slsYML = yaml.load(open("serverless.yml"), yaml.SafeLoader)
     slsService = slsYML['service']
@@ -292,7 +311,7 @@ def createAliases(creds):
         funName = slsService + '-' + slsStage + '-' + fun
         response = addDevAlias(funName,creds)
         if not response:
-            print(f"{fun} alias FAIL")
+            exit(1)
        
 
 def makePyModules(py_fileList):
@@ -461,7 +480,8 @@ def skipCLI(service, region, stage, files=0):
 @click.option('--add', '-a', is_flag=True)
 @click.option('--files', '-f', is_flag=True)
 @click.option('--alias', '-l', nargs=3, type=str)
-def main(nocli, options, buildspec, add, files, alias):
+@click.option('--delete', '-d', nargs=1, type=str)
+def main(nocli, options, buildspec, add, files, alias, delete):
     print(f"{Fore.CYAN}========SLS Manager v{__VERSION__}========{Style.RESET_ALL}")
     if(add != 1 and buildspec != 1 and nocli != 1 and not alias):
         creds = None
@@ -489,7 +509,10 @@ def main(nocli, options, buildspec, add, files, alias):
         skipCLI(service, region, stage, files)
     elif alias:
         creds = credentials(alias[0],alias[1], alias[2])
-        createAliases(creds)
+        if delete:
+            deleteAlias(creds, delete[0])
+        else:
+            createAliases(creds)
         
         
 
