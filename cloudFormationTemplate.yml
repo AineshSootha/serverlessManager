@@ -23,9 +23,7 @@ Parameters:
     Default: master
   PipelineName:
     Type: String
-    Description: >-
-      The name of the pipeline being built.  This name will be used on a number
-      of resources.
+    Description: The name of the pipeline being built.
     Default: CodePipelineSLS
   ComputeType:
     Type: String
@@ -82,6 +80,10 @@ Resources:
             Resource:
               - !Sub 'arn:aws:s3:::codepipeline-${AWS::Region}-*/*'
               - !Sub 'arn:aws:s3:::${DeploymentArtifactBucket}/*'
+          - Effect: Allow
+            Action:
+              - 'codecommit:*'
+            Resource: 'arn:aws:codecommit:*'
   CodeBuildProject:
     Type: 'AWS::CodeBuild::Project'
     Properties:
@@ -106,6 +108,8 @@ Resources:
             Value: !Ref AWSSecretAccessKey
           - Name: AWS_DEFAULT_REGION
             Value: !Ref AWSDefaultRegion
+          - Name: REPO_URL
+            Value: !Ref CodeCommitRepoURL
       Source:
         Type: CODEPIPELINE
       TimeoutInMinutes: 10
@@ -310,9 +314,10 @@ Resources:
               Configuration:
                 RepositoryName: !Ref CodeCommitRepoName
                 BranchName: !Ref CodeCommitBranch
-                OutputArtifactFormat: CODE_ZIP
+                OutputArtifactFormat: CODEBUILD_CLONE_REF
                 PollForSourceChanges: false
               RunOrder: 1
+              Namespace: SourceVariables
         - Name: Build
           Actions:
             - Name: CodeBuild
