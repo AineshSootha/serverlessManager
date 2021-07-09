@@ -291,7 +291,7 @@ def updateStack():
             funName = fun[0].upper() + fun[1:] + "LambdaFunction"
             funName = funName.replace('-','Dash')
             funName = funName.replace('_','Underscore')
-            slsLine = f"    {funName}:\n      DeletionPolicy: Retain"
+            slsLine = f"    {funName}:\n      DeletionPolicy: Retain\n"
             fSls.write(slsLine)
 
         
