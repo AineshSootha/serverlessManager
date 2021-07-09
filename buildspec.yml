@@ -10,6 +10,7 @@ phases:
       - git config --global user.name "Deploy User"
       - git tag -fa "currLatest" -m "Tagging for Build"
       - git push -f origin --tags
+      - chmod +x gitDiff.sh
       - ./gitDiff.sh
       - chmod +x deploy.sh
   pre_build:
@@ -19,10 +20,10 @@ phases:
     commands:
       - echo Build Deploy
       - ./deploy.sh
+      - git tag -fa "Latest" -m "Latest deployed"
+      - git push -f origin --tags
   post_build:
     commands:
       - slsmanager -l $AWS_ACCESS_KEY_ID $AWS_SECRET_ACCESS_KEY $AWS_DEFAULT_REGION
       - rm serverless.yml
-      - git tag -fa "Latest" -m "Latest deployed"
-      - git push -f origin --tags
       - echo post build completed on `date`
