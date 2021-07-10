@@ -13,7 +13,7 @@ import os.path as path
 #import importlib
 import yaml
 
-__VERSION__ = "0.1.25"
+__VERSION__ = "0.1.26"
 init() #colorama
 
 class credentials:
@@ -294,8 +294,6 @@ def updateStack():
             slsLine = f"    {funName}:\n      DeletionPolicy: Retain\n"
             fSls.write(slsLine)
 
-        
-
 
 def deleteAlias(creds, funName):
     lambda_client = boto3.client('lambda', 
@@ -308,11 +306,10 @@ def deleteAlias(creds, funName):
     slsStage = slsYML['provider']['stage']
     finfunName = slsService + '-' + slsStage + '-' + funName
     del_Response = lambda_client.delete_alias(
-        FunctionName=finfunName,
-        Name='dev'
-    )
-    if not del_Response:
-        exit(1)
+                        FunctionName=finfunName,
+                        Name='dev'
+                    )
+    print(f"Dropping dev alias for {finfunName}")
 
 
 def createAliases(creds):
@@ -524,7 +521,7 @@ def main(nocli, options, buildspec, add, files, alias, delete, updatestack):
     elif alias:
         creds = credentials(alias[0],alias[1], alias[2])
         if delete:
-            deleteAlias(creds, delete[0])
+            deleteAlias(creds, delete)
         else:
             createAliases(creds)
     elif updatestack == 1:
