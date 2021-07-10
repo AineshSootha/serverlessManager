@@ -305,7 +305,7 @@ def deleteAlias(creds, funName):
     slsService = slsYML['service']
     slsStage = slsYML['provider']['stage']
     finfunName = slsService + '-' + slsStage + '-' + funName
-    del_Response = lambda_client.delete_alias(
+    lambda_client.delete_alias(
                         FunctionName=finfunName,
                         Name='dev'
                     )
