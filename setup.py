@@ -1,5 +1,5 @@
 import setuptools
-__VERSION__ = "0.2.0"
+__VERSION__ = "0.2.1"
 
 with open("README.md", "r", encoding="utf8") as fh:
     long_description = fh.read()
@@ -31,7 +31,8 @@ setuptools.setup(
         'boto3',
         'progress',
         'glob2',
-        'pyyaml'
+        'pyyaml',
+        'botocore'
     ],
     entry_points = {
         'console_scripts': ['slsmanager = slsmanager.manager:main']
