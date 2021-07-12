@@ -4,6 +4,7 @@ import click
 from pathlib import Path
 from colorama import Fore, init, Style
 import boto3
+import botocore
 import json
 import time
 from progress.bar import Bar
@@ -12,8 +13,10 @@ import glob
 import os.path as path
 #import importlib
 import yaml
+#import pprint
+from collections import OrderedDict
 
-__VERSION__ = "0.1.26"
+__VERSION__ = "0.2.0"
 init() #colorama
 
 class credentials:
@@ -30,6 +33,125 @@ class credentials:
 
 
 '''AWS Stuff'''
+def importToStack(creds, funName):
+    slsYML = yaml.load(open("serverless.yml"), yaml.SafeLoader)
+    slsService = slsYML['service']
+    slsStage = slsYML['provider']['stage']
+    stackName = slsService + '-' + slsStage
+    funHandler = slsYML['functions'][funName]['handler']
+    funRuntime = slsYML['functions'][funName]['runtime']
+    actualFunName = slsService + '-' + slsStage + '-' + funName
+    funId = funName = funName[0].upper() + funName[1:] + "LambdaFunction"
+    try:
+        lambda_client = boto3.client('lambda', 
+                                    region_name=creds.AWS_DEFAULT_REGION, 
+                                    aws_access_key_id=creds.AWS_ACCESS_KEY_ID,
+                                    aws_secret_access_key=creds.AWS_SECRET_ACCESS_KEY
+                                    )
+        functionResponse = lambda_client.get_function(
+                                FunctionName=actualFunName
+                            )
+    except:
+        print(f"Function {funName} OK. Continuing...\n")
+        return
+    cf_client = boto3.client('cloudformation', 
+                            region_name=creds.AWS_DEFAULT_REGION, 
+                            aws_access_key_id=creds.AWS_ACCESS_KEY_ID,
+                            aws_secret_access_key=creds.AWS_SECRET_ACCESS_KEY
+                            )
+    try:
+        exists_response = cf_client.describe_stacks(
+                            StackName=stackName
+                        ) 
+    except:
+        print("SLSMANAGER EXCEPTION\nStack not found. \
+              \nThis exception occurs when you are trying to redploy a previously deleted function that still exists. \
+              Did you rename the serverless cloudformation stack? \
+              If not, submit an issue: https://github.com/AineshSootha/serverlessManager/issues")
+    templateDict = dict()
+    funCode = dict()
+    try:
+        print(stackName)
+        cf_template = cf_client.get_template(
+                StackName=stackName
+            )
+        
+    except:
+        print("SLSMANAGER EXCEPTION\nCloudformation Template not found. \
+              \nThis exception occurs when you are trying to redploy a previously deleted function that still exists.\n \
+              Did you rename the serverless cloudformation stack?\n \
+              If not, submit an issue: https://github.com/AineshSootha/serverlessManager/issues", )
+    try:
+        lambda_client = boto3.client('lambda', 
+                                region_name=creds.AWS_DEFAULT_REGION, 
+                                aws_access_key_id=creds.AWS_ACCESS_KEY_ID,
+                                aws_secret_access_key=creds.AWS_SECRET_ACCESS_KEY
+                                )
+        functionResponse = lambda_client.get_function(
+                                FunctionName=actualFunName
+                            )
+        funCode = functionResponse['Code']
+    except botocore.exceptions.ClientError as error:
+        print("SLSMANAGER EXCEPTION\nCloudformation Template not found. \
+            \nThis exception occurs when you are trying to redploy a previously deleted function that still exists.\n \
+            Did you rename the serverless cloudformation stack?\n \
+            If not, submit an issue: https://github.com/AineshSootha/serverlessManager/issues", ) 
+        raise(error)  
+    
+    templateDict = cf_template
+    newFunDict = OrderedDict()
+    newFunDict =  {
+            "Type": "AWS::Lambda::Function",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+                "Code": {
+                    "ZipFile":funCode['Location']
+                },
+                "Handler": funHandler,
+                "Runtime": funRuntime,
+                "FunctionName": actualFunName,
+                "MemorySize": 1024,
+                "Timeout": 6,
+                "Role": {
+                    "Fn::GetAtt": [
+                        "IamRoleLambdaExecution",
+                        "Arn"
+                    ]
+                }
+            }
+        }
+    newFunDict = OrderedDict(newFunDict)
+    templateDict['TemplateBody']['Resources'][funId] = newFunDict
+    #pprint.pprint(templateDict['TemplateBody']['Resources'])
+    templateJson = json.dumps(templateDict['TemplateBody'])
+    cf_response = cf_client.create_change_set(
+                            StackName=stackName,
+                            TemplateBody = templateJson,
+                            ChangeSetName='import'+'-'+funName,
+                            Capabilities=['CAPABILITY_NAMED_IAM'],
+                            ClientToken='import'+'-'+funName,
+                            Description=f'importing {funName}',
+                            ChangeSetType='IMPORT',
+                            ResourcesToImport=[
+                                {
+                                    'ResourceType': 'AWS::Lambda::Function',
+                                    'LogicalResourceId': funId,
+                                    'ResourceIdentifier': {
+                                        'FunctionName': actualFunName
+                                    }
+                                },
+                            ]
+                        )
+    bar = Bar(f'Readding {funName} to the Cloudformation Template.', max=100)
+    for i in range(100):
+        time.sleep(0.15)
+        bar.next()
+    bar.finish()
+    changeSet_response = cf_client.execute_change_set(
+                            ChangeSetName=f"import-{funName}",
+                            StackName=stackName
+                        )
+
 
 def createRepo(repoName, repoDesc, creds):
     CC_client = boto3.client('codecommit', 
@@ -282,7 +404,7 @@ def addDevAlias(fun, creds):
     return alias_response
     
 '''Serverless Framework Stuff'''
-def updateStack():
+def updateDeletion():
     slsYML = yaml.load(open("serverless.yml"), yaml.SafeLoader)
     slsFunctions = slsYML['functions']
     with open("serverless.yml", "a") as fSls:
@@ -491,10 +613,11 @@ def skipCLI(service, region, stage, files=0):
 @click.option('--files', '-f', is_flag=True)
 @click.option('--alias', '-l', nargs=3, type=str)
 @click.option('--delete', '-d', nargs=1, type=str)
-@click.option('--updatestack', '-u', is_flag=True)
-def main(nocli, options, buildspec, add, files, alias, delete, updatestack):
+@click.option('--updatedeletion', '-u', is_flag=True)
+@click.option('--importtostack', '-i', nargs=4)
+def main(nocli, options, buildspec, add, files, alias, delete, updatedeletion, importtostack):
     print(f"{Fore.CYAN}========SLS Manager v{__VERSION__}========{Style.RESET_ALL}")
-    if(add != 1 and buildspec != 1 and nocli != 1 and not alias and updatestack != 1):
+    if(add != 1 and buildspec != 1 and nocli != 1 and not alias and updatedeletion != 1 and not importtostack):
         creds = None
         ccInput = input("Would you like to create a new CodeCommit Repo? (Y/N): ")
         if ccInput.lower() == 'y':
@@ -524,9 +647,11 @@ def main(nocli, options, buildspec, add, files, alias, delete, updatestack):
             deleteAlias(creds, delete)
         else:
             createAliases(creds)
-    elif updatestack == 1:
-        updateStack()
+    elif updatedeletion == 1:
+        updateDeletion()
+    elif importtostack:
+        creds = credentials(importtostack[0],importtostack[1], importtostack[2])
+        importToStack(creds, importtostack[3])
         
-
 if __name__ == "__main__":
     main()

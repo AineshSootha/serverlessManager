@@ -1,28 +1,32 @@
 #!/bin/bash
-readarray -t  arr2 < <(git diff currLatest Latest --name-only)
-delVar=0
-for i in "${arr2[@]}"; do
+readarray -t  arrDeleted < <(git diff Latest currLatest  --name-only --diff-filter=D)
+readarray -t  arrAdded < <(git diff Latest currLatest --name-only --diff-filter=A)
+readarray -t  arrModded< <(git diff Latest currLatest --name-only --diff-filter=M)
+
+for i in "${arrDeleted[@]}"; do
     if [[ "${i}" == *"/"* ]]; then
-        if [ ! -f "$i" ]; then
-            delVar=1
-            break
-        fi
+        funName=$(dirname "$i")
+        slsmanager -l "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" "$AWS_DEFAULT_REGION" -d "$funName"
     fi
 done
-if [ "$delVar" == 1 ]; then
-    echo -e "serverless deploy" >> deploy.sh
-    exit 0
+if [ ${#arrAdded[@]} -eq 0 ]; then
+    echo "No new functions detected"
 else
-    for i in "${arr2[@]}"; do
+    for i in "${arrDeleted[@]}"; do
+        funName=$(dirname "$i")
+        slsmanager -i "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" "$AWS_DEFAULT_REGION" "$funName"
+    done
+    echo -e "serverless deploy\nslsmanager -u\nserverless deploy" >> deploy.sh
+    echo "deploy.sh successfully created"
+    exit 0
+fi
+for i in "${arrModded[@]}"; do
         if [[ "${i}" == *"/"* ]]; then
             funName=$(dirname "$i")
             echo -e "serverless deploy function --function ${funName}\n"  >> deploy.sh
         fi
-    done
-fi
-
-if [ -s "deploy.sh" ]; then
-    echo "deploy.sh created"
-else
-    echo -e "serverless deploy" >> deploy.sh
+done
+if [ ${#arrAdded[@]} -eq 0 ]; then
+    echo "No functions modified"
+    echo -e "echo "no functions to deploy"" >> deploy.sh
 fi
