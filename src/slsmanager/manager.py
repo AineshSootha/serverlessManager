@@ -16,7 +16,7 @@ import yaml
 #import pprint
 from collections import OrderedDict
 
-__VERSION__ = "0.2.1"
+__VERSION__ = "0.2.2"
 init() #colorama
 
 class credentials:
