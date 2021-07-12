@@ -31,8 +31,7 @@ setuptools.setup(
         'boto3',
         'progress',
         'glob2',
-        'pyyaml',
-        'botocore'
+        'pyyaml'
     ],
     entry_points = {
         'console_scripts': ['slsmanager = slsmanager.manager:main']

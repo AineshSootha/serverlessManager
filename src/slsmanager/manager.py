@@ -151,7 +151,7 @@ def importToStack(creds, funName):
                             ChangeSetName=f"import-{funName}",
                             StackName=stackName
                         )
-
+    time.sleep(10)
 
 def createRepo(repoName, repoDesc, creds):
     CC_client = boto3.client('codecommit', 
