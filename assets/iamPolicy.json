@@ -85,7 +85,6 @@
                 "cloudformation:Describe*",
                 "cloudformation:CreateStack",
                 "cloudformation:DeleteStack",
-                "cloudformation:UpdateStack",
                 "cloudformation:CancelUpdateStack",
                 "cloudformation:UpdateStack",
                 "cloudformation:ValidateTemplate",
