@@ -88,7 +88,10 @@
                 "cloudformation:UpdateStack",
                 "cloudformation:CancelUpdateStack",
                 "cloudformation:UpdateStack",
-                "cloudformation:ValidateTemplate"
+                "cloudformation:ValidateTemplate",
+                "cloudformation:CreateChangeSet",
+                "cloudformation:ExecuteChangeSet",
+                "cloudformation:GetTemplate"
             ],
             "Resource": "*"
         },
