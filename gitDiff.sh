@@ -12,7 +12,7 @@ done
 if [ ${#arrAdded[@]} -eq 0 ]; then
     echo "No new functions detected"
 else
-    for i in "${arrDeleted[@]}"; do
+    for i in "${arrAdded[@]}"; do
         funName=$(dirname "$i")
         slsmanager -i "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" "$AWS_DEFAULT_REGION" "$funName"
     done
@@ -28,5 +28,5 @@ for i in "${arrModded[@]}"; do
 done
 if [ ${#arrAdded[@]} -eq 0 ]; then
     echo "No functions modified"
-    echo -e "echo "no functions to deploy"" >> deploy.sh
+    echo -e "echo "No functions to deploy"" >> deploy.sh
 fi
